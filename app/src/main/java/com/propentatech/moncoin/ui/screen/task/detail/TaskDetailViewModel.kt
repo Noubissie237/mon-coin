@@ -102,4 +102,34 @@ class TaskDetailViewModel @Inject constructor(
             alarmScheduler.cancelAlarm(occurrenceId)
         }
     }
+    
+    fun startTask() {
+        viewModelScope.launch {
+            val task = _uiState.value.task ?: return@launch
+            
+            // Only for DUREE mode tasks
+            if (task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE) {
+                val durationMinutes = task.durationMinutes ?: 60
+                val startAt = LocalDateTime.now()
+                val endAt = startAt.plusMinutes(durationMinutes.toLong())
+                
+                // Create occurrence
+                val occurrence = OccurrenceEntity(
+                    taskId = task.id,
+                    startAt = startAt,
+                    endAt = endAt,
+                    state = TaskState.RUNNING
+                )
+                occurrenceRepository.insertOccurrence(occurrence)
+                
+                // Schedule end alarm (when task finishes)
+                if (task.alarmsEnabled) {
+                    alarmScheduler.scheduleAlarm(occurrence, task.title)
+                }
+                
+                // Update task state
+                taskRepository.updateTaskState(task.id, TaskState.RUNNING)
+            }
+        }
+    }
 }

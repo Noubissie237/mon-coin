@@ -219,8 +219,10 @@ class TaskCreateViewModel @Inject constructor(
                 // Save task
                 taskRepository.insertTask(task)
                 
-                // Create occurrence for non-recurring or first occurrence
+                // Create occurrence only for PLAGE mode
+                // DUREE mode tasks will create occurrence when user manually starts them
                 if (state.taskMode == TaskMode.PLAGE) {
+                    // PLAGE mode: use defined start and end times
                     val occurrence = OccurrenceEntity(
                         taskId = task.id,
                         startAt = task.startTime!!,
@@ -243,6 +245,8 @@ class TaskCreateViewModel @Inject constructor(
                         }
                     }
                 }
+                // Note: DUREE mode tasks don't create occurrence at creation time
+                // They will be started manually by the user, and occurrence will be created then
                 
                 _uiState.value = state.copy(isLoading = false, isSaved = true)
             } catch (e: Exception) {

@@ -124,6 +124,27 @@ fun HomeScreen(
                     }
                 }
                 
+                // Duration Tasks (ready to start)
+                if (uiState.durationTasks.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Tâches à démarrer",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    
+                    items(uiState.durationTasks) { task ->
+                        DurationTaskCard(
+                            title = task.title,
+                            description = task.description,
+                            durationMinutes = task.durationMinutes ?: 60,
+                            onStart = { viewModel.startTask(task.id) },
+                            onClick = { onNavigateToTaskDetail(task.id) }
+                        )
+                    }
+                }
+                
                 // Running Tasks
                 if (uiState.runningTasks.isNotEmpty()) {
                     item {
@@ -264,7 +285,7 @@ fun TaskCard(
                 )
             }
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Voir détails",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -326,10 +347,97 @@ fun OccurrenceCard(
                 )
             }
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Voir détails",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+fun DurationTaskCard(
+    title: String,
+    description: String,
+    durationMinutes: Int,
+    onStart: () -> Unit,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (description.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Durée: ${durationMinutes / 60}h ${durationMinutes % 60}min",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onStart,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Démarrer")
+                }
+                
+                OutlinedButton(
+                    onClick = onClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Détails")
+                }
+            }
         }
     }
 }

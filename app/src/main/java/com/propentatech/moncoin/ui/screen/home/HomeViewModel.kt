@@ -2,6 +2,7 @@ package com.propentatech.moncoin.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.propentatech.moncoin.alarm.AlarmScheduler
 import com.propentatech.moncoin.data.local.entity.OccurrenceEntity
 import com.propentatech.moncoin.data.local.entity.TaskEntity
 import com.propentatech.moncoin.data.model.TaskState
@@ -21,6 +22,7 @@ data class OccurrenceWithTask(
 data class HomeUiState(
     val todayOccurrences: List<OccurrenceWithTask> = emptyList(),
     val runningTasks: List<TaskEntity> = emptyList(),
+    val durationTasks: List<TaskEntity> = emptyList(),  // DUREE mode tasks ready to start
     val scheduledTasksCount: Int = 0,
     val completedTasksCount: Int = 0,
     val isLoading: Boolean = true
@@ -29,7 +31,8 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
-    private val occurrenceRepository: OccurrenceRepository
+    private val occurrenceRepository: OccurrenceRepository,
+    private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -45,10 +48,14 @@ class HomeViewModel @Inject constructor(
             val startOfDay = today.toLocalDate().atStartOfDay()
             val endOfDay = today.toLocalDate().atTime(23, 59, 59)
             
-            occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay).collect { occurrences ->
+            // Combiner les flows pour mettre à jour l'UI
+            combine(
+                occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay),
+                taskRepository.getAllTasks()
+            ) { occurrences, allTasks ->
                 // Enrichir les occurrences avec les titres des tâches
                 val occurrencesWithTasks = occurrences.map { occurrence ->
-                    val task = taskRepository.getTaskById(occurrence.taskId)
+                    val task = allTasks.find { it.id == occurrence.taskId }
                     OccurrenceWithTask(
                         occurrence = occurrence,
                         taskTitle = task?.title ?: "Tâche inconnue"
@@ -63,23 +70,56 @@ class HomeViewModel @Inject constructor(
                 // Récupérer les tâches en cours pour affichage
                 val runningOccurrences = occurrences.filter { it.state == TaskState.RUNNING }
                 val runningTasks = runningOccurrences.mapNotNull { occurrence ->
-                    taskRepository.getTaskById(occurrence.taskId)
+                    allTasks.find { it.id == occurrence.taskId }
                 }
                 
-                _uiState.value = HomeUiState(
+                // Récupérer les tâches en mode DUREE qui peuvent être démarrées
+                val durationTasks = allTasks.filter { task ->
+                    task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE 
+                    && task.state == TaskState.SCHEDULED
+                }
+                
+                HomeUiState(
                     todayOccurrences = occurrencesWithTasks,
                     runningTasks = runningTasks,
+                    durationTasks = durationTasks,
                     scheduledTasksCount = scheduledCount,
                     completedTasksCount = completedCount,
                     isLoading = false
                 )
+            }.collect { newState ->
+                _uiState.value = newState
             }
         }
     }
     
     fun startTask(taskId: String) {
         viewModelScope.launch {
-            taskRepository.updateTaskState(taskId, TaskState.RUNNING)
+            val task = taskRepository.getTaskById(taskId) ?: return@launch
+            
+            // Only for DUREE mode tasks
+            if (task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE) {
+                val durationMinutes = task.durationMinutes ?: 60
+                val startAt = LocalDateTime.now()
+                val endAt = startAt.plusMinutes(durationMinutes.toLong())
+                
+                // Create occurrence
+                val occurrence = OccurrenceEntity(
+                    taskId = task.id,
+                    startAt = startAt,
+                    endAt = endAt,
+                    state = TaskState.RUNNING
+                )
+                occurrenceRepository.insertOccurrence(occurrence)
+                
+                // Schedule end alarm (when task finishes)
+                if (task.alarmsEnabled) {
+                    alarmScheduler.scheduleAlarm(occurrence, task.title)
+                }
+                
+                // Update task state
+                taskRepository.updateTaskState(task.id, TaskState.RUNNING)
+            }
         }
     }
     

@@ -148,6 +148,22 @@ fun TaskDetailScreen(
                             )
                             
                             uiState.task?.let { task ->
+                                // Start button for DUREE mode tasks
+                                if (task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE 
+                                    && task.state != TaskState.RUNNING) {
+                                    Button(
+                                        onClick = { viewModel.startTask() },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Démarrer la tâche")
+                                    }
+                                }
+                                
                                 Button(
                                     onClick = { onNavigateToEdit(task.id) },
                                     modifier = Modifier.fillMaxWidth()
