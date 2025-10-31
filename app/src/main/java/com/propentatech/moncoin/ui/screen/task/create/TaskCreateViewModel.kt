@@ -14,8 +14,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
@@ -287,29 +289,55 @@ class TaskCreateViewModel @Inject constructor(
                 // Save or update task
                 taskRepository.insertTask(task)
                 
-                // Create occurrence only for PLAGE mode
-                // DUREE mode tasks will create occurrence when user manually starts them
+                // Create occurrences based on task type
                 if (state.taskMode == TaskMode.PLAGE) {
-                    // PLAGE mode: use defined start and end times
-                    val occurrence = OccurrenceEntity(
-                        taskId = task.id,
-                        startAt = task.startTime!!,
-                        endAt = task.endTime!!
-                    )
-                    occurrenceRepository.insertOccurrence(occurrence)
-                    
-                    // Schedule start alarm (when task should begin)
-                    alarmScheduler.scheduleStartAlarm(occurrence, task.title)
-                    
-                    // Schedule end alarm (when task finishes)
-                    if (state.alarmsEnabled) {
-                        alarmScheduler.scheduleAlarm(occurrence, task.title)
+                    if (state.taskType == TaskType.PONCTUELLE) {
+                        // PONCTUELLE : une seule occurrence
+                        val occurrence = OccurrenceEntity(
+                            taskId = task.id,
+                            startAt = task.startTime!!,
+                            endAt = task.endTime!!
+                        )
+                        occurrenceRepository.insertOccurrence(occurrence)
+                    } else {
+                        // QUOTIDIENNE ou PERIODIQUE : générer les occurrences pour aujourd'hui uniquement
+                        // Les occurrences futures seront créées automatiquement chaque jour à minuit
+                        val today = LocalDate.now()
+                        val shouldCreateToday = when (state.taskType) {
+                            TaskType.QUOTIDIENNE -> true
+                            TaskType.PERIODIQUE -> state.selectedDaysOfWeek.contains(today.dayOfWeek)
+                            else -> false
+                        }
+                        
+                        if (shouldCreateToday) {
+                            val occurrence = OccurrenceEntity(
+                                taskId = task.id,
+                                startAt = today.atTime(state.startTime!!),
+                                endAt = today.atTime(state.endTime!!),
+                                state = TaskState.SCHEDULED
+                            )
+                            occurrenceRepository.insertOccurrence(occurrence)
+                        }
                     }
                     
-                    // Schedule reminders
-                    if (state.notificationsEnabled) {
-                        state.reminders.forEach { minutesBefore ->
-                            alarmScheduler.scheduleReminder(occurrence, task.title, minutesBefore)
+                    // Planifier les alarmes pour l'occurrence créée
+                    if (state.taskMode == TaskMode.PLAGE) {
+                        val createdOccurrences = occurrenceRepository.getOccurrencesByTaskId(task.id).first()
+                        createdOccurrences.forEach { occurrence ->
+                            // Schedule start alarm (when task should begin)
+                            alarmScheduler.scheduleStartAlarm(occurrence, task.title)
+                            
+                            // Schedule end alarm (when task finishes)
+                            if (state.alarmsEnabled) {
+                                alarmScheduler.scheduleAlarm(occurrence, task.title)
+                            }
+                            
+                            // Schedule reminders
+                            if (state.notificationsEnabled) {
+                                state.reminders.forEach { minutesBefore ->
+                                    alarmScheduler.scheduleReminder(occurrence, task.title, minutesBefore)
+                                }
+                            }
                         }
                     }
                 }
