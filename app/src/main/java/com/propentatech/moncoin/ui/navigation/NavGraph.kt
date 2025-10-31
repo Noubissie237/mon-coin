@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.propentatech.moncoin.ui.screen.home.HomeScreen
 import com.propentatech.moncoin.ui.screen.settings.SettingsScreen
 import com.propentatech.moncoin.ui.screen.task.create.TaskCreateScreen
+import com.propentatech.moncoin.ui.screen.history.HistoryScreen
 
 @Composable
 fun NavGraph(
@@ -50,6 +51,14 @@ fun NavGraph(
             )
         }
         
+        composable(Screen.History.route) {
+            HistoryScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onNavigateBack = {
@@ -58,6 +67,6 @@ fun NavGraph(
             )
         }
         
-        // TODO: Add other screens (History, Notes, Statistics, TaskDetail)
+        // TODO: Add other screens (Notes, Statistics, TaskDetail)
     }
 }

@@ -8,6 +8,7 @@ import com.propentatech.moncoin.data.local.entity.TaskEntity
 import com.propentatech.moncoin.data.model.*
 import com.propentatech.moncoin.data.repository.OccurrenceRepository
 import com.propentatech.moncoin.data.repository.TaskRepository
+import com.propentatech.moncoin.domain.scheduler.SchedulingService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +44,8 @@ data class TaskCreateUiState(
 class TaskCreateViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val occurrenceRepository: OccurrenceRepository,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val schedulingService: SchedulingService
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(TaskCreateUiState())
@@ -159,6 +161,32 @@ class TaskCreateViewModel @Inject constructor(
         
         viewModelScope.launch {
             try {
+                // Check for conflicts if PLAGE mode
+                if (state.taskMode == TaskMode.PLAGE && state.startTime != null && state.endTime != null) {
+                    val startDateTime = state.selectedDate.toLocalDate().atTime(state.startTime)
+                    val endDateTime = state.selectedDate.toLocalDate().atTime(state.endTime)
+                    
+                    // Check for conflicts with existing tasks
+                    val hasConflict = schedulingService.hasConflict(startDateTime, endDateTime)
+                    if (hasConflict) {
+                        _uiState.value = state.copy(
+                            isLoading = false,
+                            error = "Conflit détecté avec une autre tâche. Veuillez choisir un autre horaire."
+                        )
+                        return@launch
+                    }
+                    
+                    // Check for conflicts with sleep schedule
+                    val conflictsWithSleep = schedulingService.conflictsWithSleep(startDateTime, endDateTime)
+                    if (conflictsWithSleep) {
+                        _uiState.value = state.copy(
+                            isLoading = false,
+                            error = "Cette tâche chevauche votre plage de sommeil."
+                        )
+                        return@launch
+                    }
+                }
+                
                 // Create task entity
                 val recurrence = if (state.taskType != TaskType.PONCTUELLE) {
                     Recurrence(
