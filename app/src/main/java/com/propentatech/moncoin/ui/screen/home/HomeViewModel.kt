@@ -19,9 +19,14 @@ data class OccurrenceWithTask(
     val taskTitle: String
 )
 
+data class RunningTaskWithOccurrence(
+    val task: TaskEntity,
+    val occurrence: OccurrenceEntity
+)
+
 data class HomeUiState(
     val todayOccurrences: List<OccurrenceWithTask> = emptyList(),
-    val runningTasks: List<TaskEntity> = emptyList(),
+    val runningTasks: List<RunningTaskWithOccurrence> = emptyList(),
     val durationTasks: List<TaskEntity> = emptyList(),  // DUREE mode tasks ready to start
     val scheduledTasksCount: Int = 0,
     val completedTasksCount: Int = 0,
@@ -67,10 +72,11 @@ class HomeViewModel @Inject constructor(
                 val runningCount = occurrences.count { it.state == TaskState.RUNNING }
                 val completedCount = occurrences.count { it.state == TaskState.COMPLETED }
                 
-                // Récupérer les tâches en cours pour affichage
+                // Récupérer les tâches en cours pour affichage avec leurs occurrences
                 val runningOccurrences = occurrences.filter { it.state == TaskState.RUNNING }
                 val runningTasks = runningOccurrences.mapNotNull { occurrence ->
-                    allTasks.find { it.id == occurrence.taskId }
+                    val task = allTasks.find { it.id == occurrence.taskId }
+                    task?.let { RunningTaskWithOccurrence(it, occurrence) }
                 }
                 
                 // Récupérer les tâches en mode DUREE qui peuvent être démarrées

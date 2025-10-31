@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.data.model.TaskState
 import com.propentatech.moncoin.ui.components.BottomNavigationBar
 import com.propentatech.moncoin.ui.components.Screen
+import com.propentatech.moncoin.ui.components.TaskTimer
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,12 +156,12 @@ fun HomeScreen(
                         )
                     }
                     
-                    items(uiState.runningTasks) { task ->
-                        TaskCard(
-                            title = task.title,
-                            description = task.description,
-                            isRunning = true,
-                            onClick = { onNavigateToTaskDetail(task.id) }
+                    items(uiState.runningTasks) { runningTask ->
+                        RunningTaskCard(
+                            title = runningTask.task.title,
+                            description = runningTask.task.description,
+                            endTime = runningTask.occurrence.endAt,
+                            onClick = { onNavigateToTaskDetail(runningTask.task.id) }
                         )
                     }
                 }
@@ -232,29 +233,28 @@ fun SummaryCard(
 }
 
 @Composable
-fun TaskCard(
+fun RunningTaskCard(
     title: String,
     description: String,
-    isRunning: Boolean,
+    endTime: java.time.LocalDateTime,
     onClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isRunning) 
-                MaterialTheme.colorScheme.primaryContainer 
-            else 
-                MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            if (isRunning) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = null,
@@ -262,32 +262,34 @@ fun TaskCard(
                     modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                if (description.isNotEmpty()) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
                     )
+                    if (description.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Appuyez pour voir les détails",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = "Voir détails",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Voir détails",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Timer
+            TaskTimer(
+                endTime = endTime,
+                isCompact = false
             )
         }
     }
