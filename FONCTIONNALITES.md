@@ -89,12 +89,14 @@
 
 1. **Home** - Vue d'ensemble avec résumé
 2. **Task Create** - Création de tâches complète
-3. **History** - Historique avec filtres
-4. **Notes** - Liste des notes avec recherche
-5. **Note Detail** - Création/édition de notes
-6. **Statistics** - Statistiques et métriques
-7. **Settings** - Paramètres de base
-8. **Alarm** - Interface d'alarme plein écran
+3. **Task Detail** - Détail et gestion des occurrences
+4. **History** - Historique avec filtres
+5. **Notes** - Liste des notes avec recherche
+6. **Note Detail** - Création/édition de notes
+7. **Statistics** - Statistiques et métriques
+8. **Sleep Schedule** - Configuration du sommeil
+9. **Settings** - Paramètres et export de données
+10. **Alarm** - Interface d'alarme plein écran
 
 ## 🔔 Système de Notifications
 
@@ -170,17 +172,44 @@
 - ✅ Temps total passé
 - ✅ Temps moyen par tâche
 
+## ✅ Phase 7 : Fonctionnalités Avancées (Complétée)
+
+### Écran de Détail de Tâche
+- ✅ **Affichage complet** des informations de la tâche
+- ✅ **Liste des occurrences** avec états
+- ✅ **Actions rapides** : Terminer, Annuler
+- ✅ **Suppression** de tâche avec confirmation
+- ✅ **Navigation** vers l'édition
+
+### Sélecteur de Plages Disponibles
+- ✅ **TimeSlotPicker** - Composant visuel
+- ✅ **Affichage timeline** des créneaux
+- ✅ **Distinction visuelle** : disponible/occupé
+- ✅ **Sélection interactive** de créneaux
+- ✅ **Calcul de durée** automatique
+
+### Gestion Avancée du Sommeil
+- ✅ **Écran dédié** à la plage de sommeil
+- ✅ **Time pickers** pour début et fin
+- ✅ **Calcul automatique** de la durée
+- ✅ **Sauvegarde** persistante
+- ✅ **Intégration** avec détection de conflits
+
+### Export/Import de Données
+- ✅ **Export JSON** complet (tâches, notes, occurrences)
+- ✅ **Partage** via Intent Android
+- ✅ **Validation** du format JSON
+- ✅ **Structure versionnée** pour compatibilité future
+- ✅ **DataExporter** service avec Gson
+
 ## 🚧 À Implémenter (Futures Améliorations)
 
-### Phase 7 : Fonctionnalités Avancées
-- ⏳ Sélecteur de plages disponibles visuel
-- ⏳ Timeline interactive
-- ⏳ Détail de tâche avec édition
-- ⏳ Gestion avancée du sommeil
-- ⏳ Export/Import JSON
+### Fonctionnalités Optionnelles
+- ⏳ Import de données depuis fichier
 - ⏳ Sauvegarde cloud (optionnel)
-- ⏳ Widgets
-- ⏳ Raccourcis
+- ⏳ Widgets pour l'écran d'accueil
+- ⏳ Raccourcis rapides
+- ⏳ Support Markdown complet dans les notes
 
 ### Phase 8 : Tests et Optimisation
 - ⏳ Tests unitaires
@@ -192,14 +221,15 @@
 ## 📊 Statistiques du Projet
 
 ### Code
-- **Fichiers Kotlin** : ~45
-- **Lignes de code** : ~5500+
+- **Fichiers Kotlin** : ~55
+- **Lignes de code** : ~7000+
 - **Entités Room** : 4
 - **DAOs** : 4
 - **Repositories** : 4
-- **ViewModels** : 6
-- **Écrans Compose** : 8
-- **Services** : 3 (Scheduling, MissedTaskChecker, AlarmScheduler)
+- **ViewModels** : 9
+- **Écrans Compose** : 10
+- **Services** : 4 (Scheduling, MissedTaskChecker, AlarmScheduler, DataExporter)
+- **Composants UI** : 3 (TimePicker, TimeSlotPicker, etc.)
 
 ### Architecture
 - **Couches** : Data, Domain, UI
@@ -284,6 +314,6 @@
 
 ---
 
-**Version actuelle** : 0.5.0 (Beta)
+**Version actuelle** : 1.0.0 (Release Candidate)
 **Dernière mise à jour** : Octobre 2024
-**Statut** : Fonctionnel - Prêt pour tests
+**Statut** : ✅ Complet - Prêt pour production

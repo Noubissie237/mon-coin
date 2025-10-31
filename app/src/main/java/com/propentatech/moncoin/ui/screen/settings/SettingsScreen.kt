@@ -1,5 +1,7 @@
 package com.propentatech.moncoin.ui.screen.settings
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -7,13 +9,56 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.propentatech.moncoin.domain.export.ImportResult
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit
+    viewModel: SettingsViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
+    onNavigateToSleepSchedule: () -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Show error
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
+    
+    // Show import result
+    LaunchedEffect(uiState.importResult) {
+        when (val result = uiState.importResult) {
+            is ImportResult.Success -> {
+                snackbarHostState.showSnackbar(
+                    "Import réussi: ${result.tasksCount} tâches, ${result.notesCount} notes"
+                )
+                viewModel.clearImportResult()
+            }
+            is ImportResult.Error -> {
+                snackbarHostState.showSnackbar("Erreur: ${result.message}")
+                viewModel.clearImportResult()
+            }
+            null -> {}
+        }
+    }
+    
+    // Handle export data
+    LaunchedEffect(uiState.exportedData) {
+        uiState.exportedData?.let { json ->
+            shareJsonFile(context, json)
+            viewModel.clearExportedData()
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,7 +120,7 @@ fun SettingsScreen(
                 SettingsClickableItem(
                     title = "Plage de sommeil",
                     description = "Configurer votre horaire de sommeil",
-                    onClick = { }
+                    onClick = onNavigateToSleepSchedule
                 )
             }
             
@@ -115,18 +160,45 @@ fun SettingsScreen(
                 SettingsClickableItem(
                     title = "Exporter les données",
                     description = "Sauvegarder vos tâches et notes",
-                    onClick = { }
+                    onClick = { viewModel.exportData() },
+                    isLoading = uiState.isExporting
                 )
             }
             
             item {
-                SettingsClickableItem(
-                    title = "Importer les données",
-                    description = "Restaurer depuis une sauvegarde",
-                    onClick = { }
+                Text(
+                    text = "L'import de données n'est pas encore implémenté",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
+    }
+}
+
+// Helper function to share JSON file
+private fun shareJsonFile(context: Context, jsonContent: String) {
+    try {
+        val fileName = "moncoin_export_${System.currentTimeMillis()}.json"
+        val file = File(context.cacheDir, fileName)
+        file.writeText(jsonContent)
+        
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/json"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(Intent.createChooser(intent, "Partager l'export"))
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 
@@ -169,26 +241,37 @@ fun SettingsSwitchItem(
 fun SettingsClickableItem(
     title: String,
     description: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isLoading: Boolean = false
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        enabled = !isLoading
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            }
         }
     }
 }

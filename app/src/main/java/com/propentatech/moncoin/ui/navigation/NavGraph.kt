@@ -13,6 +13,8 @@ import com.propentatech.moncoin.ui.screen.history.HistoryScreen
 import com.propentatech.moncoin.ui.screen.notes.NotesScreen
 import com.propentatech.moncoin.ui.screen.notes.NoteDetailScreen
 import com.propentatech.moncoin.ui.screen.statistics.StatisticsScreen
+import com.propentatech.moncoin.ui.screen.task.detail.TaskDetailScreen
+import com.propentatech.moncoin.ui.screen.sleep.SleepScheduleScreen
 
 @Composable
 fun NavGraph(
@@ -50,6 +52,23 @@ fun NavGraph(
             TaskCreateScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+        
+        composable(
+            route = Screen.TaskDetail.route,
+            arguments = listOf(
+                navArgument("taskId") { type = NavType.StringType }
+            )
+        ) {
+            TaskDetailScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToEdit = { taskId ->
+                    // TODO: Implement edit screen
+                    navController.navigate(Screen.TaskCreate.route)
                 }
             )
         }
@@ -97,14 +116,23 @@ fun NavGraph(
             )
         }
         
-        composable(Screen.Settings.route) {
-            SettingsScreen(
+        composable(Screen.SleepSchedule.route) {
+            SleepScheduleScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }
             )
         }
         
-        // TODO: Add other screens (TaskDetail)
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToSleepSchedule = {
+                    navController.navigate(Screen.SleepSchedule.route)
+                }
+            )
+        }
     }
 }

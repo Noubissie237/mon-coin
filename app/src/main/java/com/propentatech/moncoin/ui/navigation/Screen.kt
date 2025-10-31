@@ -12,5 +12,6 @@ sealed class Screen(val route: String) {
         fun createRoute(noteId: String) = "note_detail/$noteId"
     }
     object Statistics : Screen("statistics")
+    object SleepSchedule : Screen("sleep_schedule")
     object Settings : Screen("settings")
 }
