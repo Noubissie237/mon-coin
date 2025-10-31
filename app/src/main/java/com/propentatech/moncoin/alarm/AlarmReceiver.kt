@@ -4,18 +4,27 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.propentatech.moncoin.data.repository.OccurrenceRepository
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface AlarmReceiverEntryPoint {
+    fun notificationHelper(): NotificationHelper
+    fun taskStateChecker(): TaskStateChecker
+    fun occurrenceRepository(): OccurrenceRepository
+}
 
 @AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
-    
-    @Inject
-    lateinit var notificationHelper: NotificationHelper
     
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     
@@ -37,31 +46,84 @@ class AlarmReceiver : BroadcastReceiver() {
         
         Log.d(TAG, "Alarm triggered for occurrence: $occurrenceId")
         
-        // Start AlarmActivity to show full-screen alarm
-        val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra(EXTRA_OCCURRENCE_ID, occurrenceId)
-            putExtra(EXTRA_TASK_ID, taskId)
-            putExtra(EXTRA_TASK_TITLE, taskTitle)
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            AlarmReceiverEntryPoint::class.java
+        )
+        
+        scope.launch {
+            val taskStateChecker = entryPoint.taskStateChecker()
+            val occurrenceRepository = entryPoint.occurrenceRepository()
+            val notificationHelper = entryPoint.notificationHelper()
+            
+            // Check if we should trigger the alarm (only if RUNNING)
+            if (taskStateChecker.shouldTriggerEndAlarm(occurrenceId)) {
+                Log.d(TAG, "Showing full-screen notification for task end...")
+                
+                // Use notification with full-screen intent instead of starting activity directly
+                // This works even when the app is killed
+                notificationHelper.showTaskEndNotification(
+                    occurrenceId = occurrenceId,
+                    taskId = taskId,
+                    taskTitle = taskTitle
+                )
+                
+                Log.d(TAG, "Full-screen notification shown successfully!")
+            } else {
+                // Task was not started, mark as MISSED
+                val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
+                if (occurrence?.state == com.propentatech.moncoin.data.model.TaskState.SCHEDULED) {
+                    Log.d(TAG, "Task was not started, marking as MISSED")
+                    occurrenceRepository.updateOccurrenceState(occurrenceId, com.propentatech.moncoin.data.model.TaskState.MISSED)
+                    notificationHelper.showMissedTaskNotification(occurrenceId, taskTitle)
+                }
+            }
         }
-        context.startActivity(alarmIntent)
     }
     
     private fun handleStartTrigger(context: Context, intent: Intent) {
-        val occurrenceId = intent.getStringExtra(EXTRA_OCCURRENCE_ID) ?: return
-        val taskId = intent.getStringExtra(EXTRA_TASK_ID) ?: return
+        val occurrenceId = intent.getStringExtra(EXTRA_OCCURRENCE_ID) ?: run {
+            Log.e(TAG, "Start trigger: EXTRA_OCCURRENCE_ID is null!")
+            return
+        }
+        val taskId = intent.getStringExtra(EXTRA_TASK_ID) ?: run {
+            Log.e(TAG, "Start trigger: EXTRA_TASK_ID is null!")
+            return
+        }
         val taskTitle = intent.getStringExtra(EXTRA_TASK_TITLE) ?: "Tâche"
         
-        Log.d(TAG, "Start trigger for occurrence: $occurrenceId")
+        Log.d(TAG, "Start trigger for occurrence: $occurrenceId, task: $taskTitle")
         
-        // Start TaskStartActivity to show full-screen start prompt
-        val startIntent = Intent(context, com.propentatech.moncoin.ui.screen.task.start.TaskStartActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra(EXTRA_OCCURRENCE_ID, occurrenceId)
-            putExtra(EXTRA_TASK_ID, taskId)
-            putExtra(EXTRA_TASK_TITLE, taskTitle)
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            AlarmReceiverEntryPoint::class.java
+        )
+        
+        scope.launch {
+            val taskStateChecker = entryPoint.taskStateChecker()
+            val occurrenceRepository = entryPoint.occurrenceRepository()
+            val notificationHelper = entryPoint.notificationHelper()
+            
+            val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
+            Log.d(TAG, "Current state: ${occurrence?.state}")
+            
+            // Check if we should trigger the start alarm (only if SCHEDULED)
+            if (taskStateChecker.shouldTriggerStartAlarm(occurrenceId)) {
+                Log.d(TAG, "Showing full-screen notification for task start...")
+                
+                // Use notification with full-screen intent instead of starting activity directly
+                // This works even when the app is killed
+                notificationHelper.showTaskStartNotification(
+                    occurrenceId = occurrenceId,
+                    taskId = taskId,
+                    taskTitle = taskTitle
+                )
+                
+                Log.d(TAG, "Full-screen notification shown successfully!")
+            } else {
+                Log.w(TAG, "Task is not in SCHEDULED state, not triggering start alarm")
+            }
         }
-        context.startActivity(startIntent)
     }
     
     private fun handleReminderTrigger(context: Context, intent: Intent) {
@@ -71,8 +133,14 @@ class AlarmReceiver : BroadcastReceiver() {
         
         Log.d(TAG, "Reminder triggered for occurrence: $occurrenceId")
         
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            AlarmReceiverEntryPoint::class.java
+        )
+        
         // Show reminder notification
         scope.launch {
+            val notificationHelper = entryPoint.notificationHelper()
             notificationHelper.showReminderNotification(
                 occurrenceId = occurrenceId,
                 taskTitle = taskTitle,

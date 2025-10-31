@@ -58,6 +58,8 @@ class AlarmScheduler @Inject constructor(
      * Schedule a start alarm when the task should begin
      */
     fun scheduleStartAlarm(occurrence: OccurrenceEntity, taskTitle: String) {
+        android.util.Log.d("AlarmScheduler", "Scheduling START alarm for: $taskTitle at ${occurrence.startAt}")
+        
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             action = AlarmReceiver.ACTION_START_TRIGGER
             putExtra(AlarmReceiver.EXTRA_OCCURRENCE_ID, occurrence.id)
@@ -73,6 +75,9 @@ class AlarmScheduler @Inject constructor(
         )
         
         val triggerTime = occurrence.startAt.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+        val now = System.currentTimeMillis()
+        
+        android.util.Log.d("AlarmScheduler", "Trigger time: $triggerTime, Now: $now, Diff: ${(triggerTime - now) / 1000}s")
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(
@@ -87,6 +92,8 @@ class AlarmScheduler @Inject constructor(
                 pendingIntent
             )
         }
+        
+        android.util.Log.d("AlarmScheduler", "START alarm scheduled successfully")
     }
     
     /**

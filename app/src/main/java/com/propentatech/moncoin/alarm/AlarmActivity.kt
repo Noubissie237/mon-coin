@@ -15,11 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import com.propentatech.moncoin.data.model.TaskState
+import com.propentatech.moncoin.data.repository.OccurrenceRepository
 import com.propentatech.moncoin.ui.theme.MonCoinTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AlarmActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var occurrenceRepository: OccurrenceRepository
     
     private var mediaPlayer: MediaPlayer? = null
     
@@ -51,11 +59,20 @@ class AlarmActivity : ComponentActivity() {
                     taskTitle = taskTitle,
                     onDismiss = {
                         stopAlarmSound()
+                        lifecycleScope.launch {
+                            // Mark as completed if it was running
+                            val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
+                            if (occurrence?.state == TaskState.RUNNING) {
+                                occurrenceRepository.updateOccurrenceState(occurrenceId, TaskState.COMPLETED)
+                            }
+                        }
                         finish()
                     },
                     onSnooze = {
                         stopAlarmSound()
-                        // TODO: Implement snooze logic
+                        lifecycleScope.launch {
+                            occurrenceRepository.updateOccurrenceState(occurrenceId, TaskState.SNOOZED)
+                        }
                         finish()
                     }
                 )

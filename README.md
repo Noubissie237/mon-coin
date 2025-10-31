@@ -171,5 +171,4 @@ L'interface utilise Material Design 3 avec :
 Projet personnel - Tous droits réservés
 
 ## 👤 Auteur
-
-NK Wilfried - ProPentaTech
+NOUBISSIE KAMGA WILFRIED
