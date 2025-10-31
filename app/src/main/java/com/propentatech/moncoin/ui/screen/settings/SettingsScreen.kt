@@ -192,6 +192,27 @@ fun SettingsScreen(
                     }
                 )
             }
+            
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            }
+            
+            item {
+                Text(
+                    text = "À propos",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            
+            item {
+                AboutCard(
+                    onPortfolioClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://noubissie.propentatech.com"))
+                        context.startActivity(intent)
+                    }
+                )
+            }
         }
     }
 }
@@ -291,6 +312,74 @@ fun SettingsClickableItem(
                     strokeWidth = 2.dp
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun AboutCard(
+    onPortfolioClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // App info
+            Column(
+                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "MonCoin",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Version 1.0.0",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            HorizontalDivider()
+            
+            // Developer info
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Développé par",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Noubissie Wilfried",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            
+            // Portfolio button
+            Button(
+                onClick = onPortfolioClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Visiter mon portfolio")
+            }
+            
+            // Copyright
+            Text(
+                text = "© 2025 Tous droits réservés.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
         }
     }
 }
