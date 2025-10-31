@@ -11,12 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.propentatech.moncoin.ui.components.BottomNavigationBar
+import com.propentatech.moncoin.ui.components.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
     viewModel: StatisticsViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {},
+    onNavigateToNotes: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -29,6 +34,15 @@ fun StatisticsScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                currentScreen = Screen.STATS,
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToHistory = onNavigateToHistory,
+                onNavigateToNotes = onNavigateToNotes,
+                onNavigateToStats = { }
             )
         }
     ) { paddingValues ->

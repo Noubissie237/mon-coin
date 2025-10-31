@@ -14,13 +14,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.data.model.TaskState
+import com.propentatech.moncoin.ui.components.BottomNavigationBar
+import com.propentatech.moncoin.ui.components.Screen
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToNotes: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -33,6 +38,15 @@ fun HistoryScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
                 }
+            )
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                currentScreen = Screen.HISTORY,
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToHistory = { },
+                onNavigateToNotes = onNavigateToNotes,
+                onNavigateToStats = onNavigateToStats
             )
         }
     ) { paddingValues ->

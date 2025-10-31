@@ -37,15 +37,40 @@ class DataExporter @Inject constructor(
         .create()
     
     /**
-     * Export all app data to JSON string
+     * Export app data to JSON string
+     * @param includeTasks Whether to include tasks and occurrences
+     * @param includeNotes Whether to include notes
      */
-    suspend fun exportToJson(): String {
-        val tasks = taskRepository.getAllTasks().first()
-        val occurrences = occurrenceRepository.getOccurrencesBetween(
-            LocalDateTime.now().minusYears(1),
-            LocalDateTime.now().plusYears(1)
-        ).first()
-        val notes = noteRepository.getAllNotes().first()
+    suspend fun exportToJson(includeTasks: Boolean = true, includeNotes: Boolean = true): String {
+        android.util.Log.d("DataExporter", "Starting export: tasks=$includeTasks, notes=$includeNotes")
+        
+        val tasks = if (includeTasks) {
+            val t = taskRepository.getAllTasks().first()
+            android.util.Log.d("DataExporter", "Tasks count: ${t.size}")
+            t
+        } else {
+            emptyList()
+        }
+        
+        val occurrences = if (includeTasks) {
+            val o = occurrenceRepository.getOccurrencesBetween(
+                LocalDateTime.now().minusYears(1),
+                LocalDateTime.now().plusYears(1)
+            ).first()
+            android.util.Log.d("DataExporter", "Occurrences count: ${o.size}")
+            o
+        } else {
+            emptyList()
+        }
+        
+        val notes = if (includeNotes) {
+            val n = noteRepository.getAllNotes().first()
+            android.util.Log.d("DataExporter", "Notes count: ${n.size}")
+            n
+        } else {
+            emptyList()
+        }
+        
         val sleepSchedule = sleepScheduleRepository.getSleepScheduleOnce()
         
         val export = AppDataExport(
@@ -56,46 +81,51 @@ class DataExporter @Inject constructor(
             sleepSchedule = sleepSchedule
         )
         
-        return gson.toJson(export)
+        val json = gson.toJson(export)
+        android.util.Log.d("DataExporter", "Export JSON created, length: ${json.length}")
+        
+        return json
     }
     
     /**
      * Import data from JSON string
-     * @param replaceExisting If true, deletes existing data before import
+     * Automatically detects and imports everything present in the file
      */
-    suspend fun importFromJson(jsonString: String, replaceExisting: Boolean = false): ImportResult {
+    suspend fun importFromJson(jsonString: String): ImportResult {
         return try {
             val export = gson.fromJson(jsonString, AppDataExport::class.java)
             
-            if (replaceExisting) {
-                // Clear existing data
-                clearAllData()
-            }
+            var tasksCount = 0
+            var occurrencesCount = 0
+            var notesCount = 0
             
-            // Import tasks
+            // Import tasks if present
             export.tasks.forEach { task ->
                 taskRepository.insertTask(task)
+                tasksCount++
             }
             
-            // Import occurrences
+            // Import occurrences if present
             export.occurrences.forEach { occurrence ->
                 occurrenceRepository.insertOccurrence(occurrence)
+                occurrencesCount++
             }
             
-            // Import notes
+            // Import notes if present
             export.notes.forEach { note ->
                 noteRepository.insertNote(note)
+                notesCount++
             }
             
-            // Import sleep schedule
+            // Import sleep schedule if present
             export.sleepSchedule?.let { schedule ->
                 sleepScheduleRepository.updateSleepSchedule(schedule)
             }
             
             ImportResult.Success(
-                tasksCount = export.tasks.size,
-                occurrencesCount = export.occurrences.size,
-                notesCount = export.notes.size
+                tasksCount = tasksCount,
+                occurrencesCount = occurrencesCount,
+                notesCount = notesCount
             )
         } catch (e: Exception) {
             ImportResult.Error(e.message ?: "Erreur inconnue")

@@ -77,6 +77,17 @@ fun NavGraph(
             HistoryScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onNavigateToNotes = {
+                    navController.navigate(Screen.Notes.route)
+                },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Statistics.route)
                 }
             )
         }
@@ -91,6 +102,17 @@ fun NavGraph(
                 },
                 onNavigateToNoteCreate = {
                     navController.navigate("note_detail/new")
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.History.route)
+                },
+                onNavigateToStats = {
+                    navController.navigate(Screen.Statistics.route)
                 }
             )
         }
@@ -112,6 +134,17 @@ fun NavGraph(
             StatisticsScreen(
                 onNavigateBack = {
                     navController.popBackStack()
+                },
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.History.route)
+                },
+                onNavigateToNotes = {
+                    navController.navigate(Screen.Notes.route)
                 }
             )
         }

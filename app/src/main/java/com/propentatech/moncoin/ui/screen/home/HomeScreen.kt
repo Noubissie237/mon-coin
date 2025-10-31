@@ -16,6 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.propentatech.moncoin.data.model.TaskState
+import com.propentatech.moncoin.ui.components.BottomNavigationBar
+import com.propentatech.moncoin.ui.components.Screen
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,32 +63,13 @@ fun HomeScreen(
             }
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Accueil") },
-                    selected = true,
-                    onClick = { }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = null) },
-                    label = { Text("Historique") },
-                    selected = false,
-                    onClick = onNavigateToHistory
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Create, contentDescription = null) },
-                    label = { Text("Notes") },
-                    selected = false,
-                    onClick = onNavigateToNotes
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
-                    label = { Text("Stats") },
-                    selected = false,
-                    onClick = onNavigateToStatistics
-                )
-            }
+            BottomNavigationBar(
+                currentScreen = Screen.HOME,
+                onNavigateToHome = { },
+                onNavigateToHistory = onNavigateToHistory,
+                onNavigateToNotes = onNavigateToNotes,
+                onNavigateToStats = onNavigateToStatistics
+            )
         }
     ) { paddingValues ->
         if (uiState.isLoading) {

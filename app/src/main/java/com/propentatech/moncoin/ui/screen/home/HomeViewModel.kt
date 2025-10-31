@@ -45,12 +45,7 @@ class HomeViewModel @Inject constructor(
             val startOfDay = today.toLocalDate().atStartOfDay()
             val endOfDay = today.toLocalDate().atTime(23, 59, 59)
             
-            combine(
-                occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay),
-                taskRepository.getTasksByState(TaskState.RUNNING),
-                taskRepository.getTaskCountByState(TaskState.SCHEDULED),
-                taskRepository.getTaskCountByState(TaskState.COMPLETED)
-            ) { occurrences, runningTasks, scheduledCount, completedCount ->
+            occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay).collect { occurrences ->
                 // Enrichir les occurrences avec les titres des tâches
                 val occurrencesWithTasks = occurrences.map { occurrence ->
                     val task = taskRepository.getTaskById(occurrence.taskId)
@@ -60,15 +55,24 @@ class HomeViewModel @Inject constructor(
                     )
                 }
                 
-                HomeUiState(
+                // Compter les occurrences par état
+                val scheduledCount = occurrences.count { it.state == TaskState.SCHEDULED }
+                val runningCount = occurrences.count { it.state == TaskState.RUNNING }
+                val completedCount = occurrences.count { it.state == TaskState.COMPLETED }
+                
+                // Récupérer les tâches en cours pour affichage
+                val runningOccurrences = occurrences.filter { it.state == TaskState.RUNNING }
+                val runningTasks = runningOccurrences.mapNotNull { occurrence ->
+                    taskRepository.getTaskById(occurrence.taskId)
+                }
+                
+                _uiState.value = HomeUiState(
                     todayOccurrences = occurrencesWithTasks,
                     runningTasks = runningTasks,
                     scheduledTasksCount = scheduledCount,
                     completedTasksCount = completedCount,
                     isLoading = false
                 )
-            }.collect { state ->
-                _uiState.value = state
             }
         }
     }

@@ -2,6 +2,7 @@ package com.propentatech.moncoin.ui.screen.settings
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,24 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var showExportDialog by remember { mutableStateOf(false) }
+    
+    // File picker launcher for import
+    val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            try {
+                val inputStream = context.contentResolver.openInputStream(it)
+                val jsonContent = inputStream?.bufferedReader()?.use { reader -> reader.readText() }
+                if (jsonContent != null) {
+                    viewModel.importData(jsonContent)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
     
     // Show error
     LaunchedEffect(uiState.error) {
@@ -55,10 +74,33 @@ fun SettingsScreen(
     // Handle export data
     LaunchedEffect(uiState.exportedData) {
         uiState.exportedData?.let { json ->
+            android.util.Log.d("SettingsScreen", "Export data received, sharing file...")
             shareJsonFile(context, json)
             viewModel.clearExportedData()
+            snackbarHostState.showSnackbar("Export réussi ! Choisissez où sauvegarder le fichier.")
         }
     }
+    
+    // Debug: Log dialog state
+    LaunchedEffect(showExportDialog) {
+        android.util.Log.d("SettingsScreen", "Export dialog state: $showExportDialog")
+    }
+    
+    // Export Dialog - Outside Scaffold
+    if (showExportDialog) {
+        ExportDialog(
+            onDismiss = { 
+                android.util.Log.d("SettingsScreen", "Export dialog dismissed")
+                showExportDialog = false 
+            },
+            onExport = { includeTasks, includeNotes ->
+                android.util.Log.d("SettingsScreen", "Export confirmed: tasks=$includeTasks, notes=$includeNotes")
+                viewModel.exportData(includeTasks, includeNotes)
+                showExportDialog = false
+            }
+        )
+    }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,7 +111,8 @@ fun SettingsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -100,26 +143,6 @@ fun SettingsScreen(
             
             item {
                 Text(
-                    text = "Apparence",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-            
-            item {
-                SettingsClickableItem(
-                    title = "Thème",
-                    description = "Clair, Sombre ou Système",
-                    onClick = { }
-                )
-            }
-            
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            }
-            
-            item {
-                Text(
                     text = "Données",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -130,17 +153,43 @@ fun SettingsScreen(
                 SettingsClickableItem(
                     title = "Exporter les données",
                     description = "Sauvegarder vos tâches et notes",
-                    onClick = { viewModel.exportData() },
+                    onClick = { 
+                        android.util.Log.d("SettingsScreen", "Export button clicked")
+                        showExportDialog = true 
+                    },
                     isLoading = uiState.isExporting
                 )
             }
             
             item {
+                SettingsClickableItem(
+                    title = "Importer les données",
+                    description = "Restaurer vos tâches et notes",
+                    onClick = { filePickerLauncher.launch("application/json") },
+                    isLoading = uiState.isImporting
+                )
+            }
+            
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            }
+            
+            item {
                 Text(
-                    text = "L'import de données n'est pas encore implémenté",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    text = "Support",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            
+            item {
+                SettingsClickableItem(
+                    title = "Contacter le développeur",
+                    description = "Besoin d'aide ? Une suggestion ?",
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/message/5M3EXSM2BMNKD1"))
+                        context.startActivity(intent)
+                    }
                 )
             }
         }
@@ -245,3 +294,68 @@ fun SettingsClickableItem(
         }
     }
 }
+
+@Composable
+fun ExportDialog(
+    onDismiss: () -> Unit,
+    onExport: (includeTasks: Boolean, includeNotes: Boolean) -> Unit
+) {
+    var includeTasks by remember { mutableStateOf(true) }
+    var includeNotes by remember { mutableStateOf(true) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Exporter les données") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Sélectionnez ce que vous souhaitez exporter :")
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text("Tâches")
+                    Checkbox(
+                        checked = includeTasks,
+                        onCheckedChange = { includeTasks = it }
+                    )
+                }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text("Notes")
+                    Checkbox(
+                        checked = includeNotes,
+                        onCheckedChange = { includeNotes = it }
+                    )
+                }
+                
+                if (!includeTasks && !includeNotes) {
+                    Text(
+                        "Veuillez sélectionner au moins un type de données",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onExport(includeTasks, includeNotes) },
+                enabled = includeTasks || includeNotes
+            ) {
+                Text("Exporter")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Annuler")
+            }
+        }
+    )
+}
+

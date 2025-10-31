@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.propentatech.moncoin.ui.components.BottomNavigationBar
+import com.propentatech.moncoin.ui.components.Screen
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,7 +26,10 @@ fun NotesScreen(
     viewModel: NotesViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToNoteDetail: (String) -> Unit,
-    onNavigateToNoteCreate: () -> Unit
+    onNavigateToNoteCreate: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -48,6 +53,15 @@ fun NotesScreen(
             FloatingActionButton(onClick = onNavigateToNoteCreate) {
                 Icon(Icons.Default.Add, contentDescription = "Nouvelle note")
             }
+        },
+        bottomBar = {
+            BottomNavigationBar(
+                currentScreen = Screen.NOTES,
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToHistory = onNavigateToHistory,
+                onNavigateToNotes = { },
+                onNavigateToStats = onNavigateToStats
+            )
         }
     ) { paddingValues ->
         Column(

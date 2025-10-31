@@ -27,17 +27,21 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
     
-    fun exportData() {
+    fun exportData(includeTasks: Boolean = true, includeNotes: Boolean = true) {
+        android.util.Log.d("SettingsViewModel", "exportData called: tasks=$includeTasks, notes=$includeNotes")
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isExporting = true, error = null)
             
             try {
-                val json = dataExporter.exportToJson()
+                android.util.Log.d("SettingsViewModel", "Starting export...")
+                val json = dataExporter.exportToJson(includeTasks, includeNotes)
+                android.util.Log.d("SettingsViewModel", "Export successful, JSON length: ${json.length}")
                 _uiState.value = _uiState.value.copy(
                     isExporting = false,
                     exportedData = json
                 )
             } catch (e: Exception) {
+                android.util.Log.e("SettingsViewModel", "Export error", e)
                 _uiState.value = _uiState.value.copy(
                     isExporting = false,
                     error = "Erreur lors de l'export: ${e.message}"
@@ -46,7 +50,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
     
-    fun importData(jsonString: String, replaceExisting: Boolean = false) {
+    fun importData(jsonString: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isImporting = true, error = null)
             
@@ -60,7 +64,8 @@ class SettingsViewModel @Inject constructor(
             }
             
             try {
-                val result = dataExporter.importFromJson(jsonString, replaceExisting)
+                // Import everything that's in the file
+                val result = dataExporter.importFromJson(jsonString)
                 _uiState.value = _uiState.value.copy(
                     isImporting = false,
                     importResult = result
