@@ -66,11 +66,13 @@ class SleepScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val schedule = SleepScheduleEntity(
+                    id = 1, // Always use ID 1 for single row
                     startTime = state.startTime.toString(),
                     endTime = state.endTime.toString()
                 )
                 
-                sleepScheduleRepository.updateSleepSchedule(schedule)
+                // Use insert with REPLACE strategy instead of update
+                sleepScheduleRepository.insertSleepSchedule(schedule)
                 
                 _uiState.value = state.copy(isLoading = false, isSaved = true)
             } catch (e: Exception) {

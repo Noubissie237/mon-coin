@@ -24,6 +24,7 @@ class AlarmReceiver : BroadcastReceiver() {
         
         when (intent.action) {
             ACTION_ALARM_TRIGGER -> handleAlarmTrigger(context, intent)
+            ACTION_START_TRIGGER -> handleStartTrigger(context, intent)
             ACTION_REMINDER_TRIGGER -> handleReminderTrigger(context, intent)
             Intent.ACTION_BOOT_COMPLETED -> handleBootCompleted(context)
         }
@@ -44,6 +45,23 @@ class AlarmReceiver : BroadcastReceiver() {
             putExtra(EXTRA_TASK_TITLE, taskTitle)
         }
         context.startActivity(alarmIntent)
+    }
+    
+    private fun handleStartTrigger(context: Context, intent: Intent) {
+        val occurrenceId = intent.getStringExtra(EXTRA_OCCURRENCE_ID) ?: return
+        val taskId = intent.getStringExtra(EXTRA_TASK_ID) ?: return
+        val taskTitle = intent.getStringExtra(EXTRA_TASK_TITLE) ?: "Tâche"
+        
+        Log.d(TAG, "Start trigger for occurrence: $occurrenceId")
+        
+        // Start TaskStartActivity to show full-screen start prompt
+        val startIntent = Intent(context, com.propentatech.moncoin.ui.screen.task.start.TaskStartActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_OCCURRENCE_ID, occurrenceId)
+            putExtra(EXTRA_TASK_ID, taskId)
+            putExtra(EXTRA_TASK_TITLE, taskTitle)
+        }
+        context.startActivity(startIntent)
     }
     
     private fun handleReminderTrigger(context: Context, intent: Intent) {
@@ -75,6 +93,7 @@ class AlarmReceiver : BroadcastReceiver() {
         private const val TAG = "AlarmReceiver"
         
         const val ACTION_ALARM_TRIGGER = "com.propentatech.moncoin.ALARM_TRIGGER"
+        const val ACTION_START_TRIGGER = "com.propentatech.moncoin.START_TRIGGER"
         const val ACTION_REMINDER_TRIGGER = "com.propentatech.moncoin.REMINDER_TRIGGER"
         
         const val EXTRA_OCCURRENCE_ID = "occurrence_id"

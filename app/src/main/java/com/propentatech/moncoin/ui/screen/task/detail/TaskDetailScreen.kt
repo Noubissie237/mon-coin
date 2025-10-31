@@ -126,6 +126,52 @@ fun TaskDetailScreen(
                         )
                     }
                 }
+                
+                // Action buttons section
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Actions",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            
+                            uiState.task?.let { task ->
+                                Button(
+                                    onClick = { onNavigateToEdit(task.id) },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(Icons.Default.Edit, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Modifier la tâche")
+                                }
+                                
+                                OutlinedButton(
+                                    onClick = { showDeleteDialog = true },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    )
+                                ) {
+                                    Icon(Icons.Default.Delete, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Supprimer la tâche")
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

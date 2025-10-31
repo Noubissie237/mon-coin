@@ -9,7 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.format.DateTimeFormatter
@@ -30,7 +34,19 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mon Coin") },
+                title = { 
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(style = SpanStyle(color = Color(0xFF38B6FF), fontWeight = FontWeight.ExtraBold)) {
+                                append("Mon")
+                            }
+                            append(" ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append("Coin")
+                            }
+                        }
+                    )
+                },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Paramètres")
@@ -159,7 +175,7 @@ fun HomeScreen(
                             startTime = occurrence.startAt.format(DateTimeFormatter.ofPattern("HH:mm")),
                             endTime = occurrence.endAt.format(DateTimeFormatter.ofPattern("HH:mm")),
                             state = occurrence.state.name,
-                            onClick = { /* Navigate to occurrence detail */ }
+                            onClick = { onNavigateToTaskDetail(occurrence.taskId) }
                         )
                     }
                 }
@@ -218,7 +234,13 @@ fun TaskCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isRunning) 
+                MaterialTheme.colorScheme.primaryContainer 
+            else 
+                MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -230,7 +252,8 @@ fun TaskCard(
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
             }
@@ -247,7 +270,19 @@ fun TaskCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Appuyez pour voir les détails",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
             }
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "Voir détails",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -269,23 +304,39 @@ fun OccurrenceCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "$startTime - $endTime",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = startTime,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = endTime,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = state,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Appuyez pour voir les détails",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = state,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f)
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "Voir détails",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

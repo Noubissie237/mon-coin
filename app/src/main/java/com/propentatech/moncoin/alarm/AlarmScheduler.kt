@@ -55,6 +55,41 @@ class AlarmScheduler @Inject constructor(
     }
     
     /**
+     * Schedule a start alarm when the task should begin
+     */
+    fun scheduleStartAlarm(occurrence: OccurrenceEntity, taskTitle: String) {
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            action = AlarmReceiver.ACTION_START_TRIGGER
+            putExtra(AlarmReceiver.EXTRA_OCCURRENCE_ID, occurrence.id)
+            putExtra(AlarmReceiver.EXTRA_TASK_ID, occurrence.taskId)
+            putExtra(AlarmReceiver.EXTRA_TASK_TITLE, taskTitle)
+        }
+        
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            (occurrence.id + "_start").hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        val triggerTime = occurrence.startAt.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        }
+    }
+    
+    /**
      * Schedule a reminder notification before the task starts
      */
     fun scheduleReminder(

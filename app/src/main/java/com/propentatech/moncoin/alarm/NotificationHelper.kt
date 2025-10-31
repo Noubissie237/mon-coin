@@ -26,12 +26,25 @@ class NotificationHelper @Inject constructor(
         taskTitle: String,
         minutesBefore: Int
     ) {
+        // Create intent to open the app
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            occurrenceId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_REMINDER)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Rappel : $taskTitle")
             .setContentText("Commence dans $minutesBefore minutes")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .build()
         
         notificationManager.notify(occurrenceId.hashCode(), notification)
@@ -44,12 +57,25 @@ class NotificationHelper @Inject constructor(
         occurrenceId: String,
         taskTitle: String
     ) {
+        // Create intent to open the app
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            occurrenceId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_SYSTEM)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Tâche manquée")
             .setContentText(taskTitle)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
             .build()
         
         notificationManager.notify(occurrenceId.hashCode(), notification)

@@ -41,6 +41,15 @@
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" />
 
+        <!-- Task Start Activity (full-screen) -->
+        <activity
+            android:name=".ui.screen.task.start.TaskStartActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance" />
+
         <!-- Alarm Receiver -->
         <receiver
             android:name=".alarm.AlarmReceiver"
@@ -50,6 +59,7 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="com.propentatech.moncoin.ALARM_TRIGGER" />
+                <action android:name="com.propentatech.moncoin.START_TRIGGER" />
                 <action android:name="com.propentatech.moncoin.REMINDER_TRIGGER" />
             </intent-filter>
         </receiver>

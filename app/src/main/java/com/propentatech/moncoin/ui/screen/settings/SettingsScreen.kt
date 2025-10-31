@@ -80,36 +80,6 @@ fun SettingsScreen(
         ) {
             item {
                 Text(
-                    text = "Notifications",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-            
-            item {
-                SettingsSwitchItem(
-                    title = "Activer les notifications",
-                    description = "Recevoir des notifications pour les rappels",
-                    checked = true,
-                    onCheckedChange = { }
-                )
-            }
-            
-            item {
-                SettingsSwitchItem(
-                    title = "Activer les alarmes",
-                    description = "Alarmes sonores à la fin des tâches",
-                    checked = true,
-                    onCheckedChange = { }
-                )
-            }
-            
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            }
-            
-            item {
-                Text(
                     text = "Sommeil",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp)

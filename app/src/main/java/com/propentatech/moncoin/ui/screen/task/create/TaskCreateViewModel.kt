@@ -228,7 +228,10 @@ class TaskCreateViewModel @Inject constructor(
                     )
                     occurrenceRepository.insertOccurrence(occurrence)
                     
-                    // Schedule alarm
+                    // Schedule start alarm (when task should begin)
+                    alarmScheduler.scheduleStartAlarm(occurrence, task.title)
+                    
+                    // Schedule end alarm (when task finishes)
                     if (state.alarmsEnabled) {
                         alarmScheduler.scheduleAlarm(occurrence, task.title)
                     }
