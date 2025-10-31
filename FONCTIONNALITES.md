@@ -90,8 +90,11 @@
 1. **Home** - Vue d'ensemble avec résumé
 2. **Task Create** - Création de tâches complète
 3. **History** - Historique avec filtres
-4. **Settings** - Paramètres de base
-5. **Alarm** - Interface d'alarme plein écran
+4. **Notes** - Liste des notes avec recherche
+5. **Note Detail** - Création/édition de notes
+6. **Statistics** - Statistiques et métriques
+7. **Settings** - Paramètres de base
+8. **Alarm** - Interface d'alarme plein écran
 
 ## 🔔 Système de Notifications
 
@@ -124,20 +127,50 @@
 - ✅ ReminderSection
 - ✅ PrioritySelector
 
-## 🚧 À Implémenter (Prochaines Phases)
+## ✅ Phase 5 : Bloc-Note (Complétée)
 
-### Phase 5 : Bloc-Note
-- ⏳ Écran liste des notes
-- ⏳ Éditeur de notes
-- ⏳ Support Markdown
-- ⏳ Recherche et tags
-- ⏳ Liens vers tâches
+### Liste des Notes
+- ✅ **Écran liste** avec toutes les notes
+- ✅ **Recherche** en temps réel dans le contenu et tags
+- ✅ **Filtrage par tags** dynamique
+- ✅ **Affichage** avec date, contenu tronqué, tags
+- ✅ **Suppression** avec confirmation
+- ✅ **État vide** avec message explicatif
 
-### Phase 6 : Statistiques
-- ⏳ Temps total par période
-- ⏳ Taux d'accomplissement
-- ⏳ Graphiques (barres, lignes)
-- ⏳ Tendances et insights
+### Éditeur de Notes
+- ✅ **Création/Édition** de notes
+- ✅ **Champ de texte** multiligne
+- ✅ **Gestion des tags** (ajout/suppression)
+- ✅ **Lien vers tâche** (optionnel)
+- ✅ **Compteur de caractères**
+- ✅ **Sauvegarde** avec validation
+- ✅ **Navigation** fluide
+
+### ViewModels
+- ✅ **NotesViewModel** - Gestion de la liste
+- ✅ **NoteDetailViewModel** - Création/édition
+- ✅ **État réactif** avec StateFlow
+- ✅ **Recherche** et filtrage
+
+## ✅ Phase 6 : Statistiques (Complétée)
+
+### Écran Statistiques
+- ✅ **Vue d'ensemble** avec cartes
+- ✅ **Sélecteur de période** (Semaine, Mois, Tout)
+- ✅ **Taux de réussite** avec barre de progression
+- ✅ **Statistiques de temps** (total et moyenne)
+- ✅ **Compteurs** : Total, Terminées, Manquées
+- ✅ **État vide** pour périodes sans données
+
+### Métriques
+- ✅ Nombre total de tâches
+- ✅ Tâches terminées
+- ✅ Tâches manquées
+- ✅ Taux de réussite (%)
+- ✅ Temps total passé
+- ✅ Temps moyen par tâche
+
+## 🚧 À Implémenter (Futures Améliorations)
 
 ### Phase 7 : Fonctionnalités Avancées
 - ⏳ Sélecteur de plages disponibles visuel
@@ -159,13 +192,14 @@
 ## 📊 Statistiques du Projet
 
 ### Code
-- **Fichiers Kotlin** : ~30
-- **Lignes de code** : ~3500+
+- **Fichiers Kotlin** : ~45
+- **Lignes de code** : ~5500+
 - **Entités Room** : 4
 - **DAOs** : 4
 - **Repositories** : 4
-- **ViewModels** : 3
-- **Écrans Compose** : 5
+- **ViewModels** : 6
+- **Écrans Compose** : 8
+- **Services** : 3 (Scheduling, MissedTaskChecker, AlarmScheduler)
 
 ### Architecture
 - **Couches** : Data, Domain, UI
@@ -213,16 +247,43 @@
 
 ## 🎯 Objectifs Atteints
 
-- ✅ Application fonctionnelle
-- ✅ Alarmes fiables
+- ✅ Application fonctionnelle et complète
+- ✅ Alarmes fiables avec persistance
 - ✅ Création de tâches complète
-- ✅ Détection de conflits
-- ✅ Historique fonctionnel
+- ✅ Détection de conflits intelligente
+- ✅ Historique avec filtres
+- ✅ Bloc-note avec recherche et tags
+- ✅ Statistiques détaillées
 - ✅ UI moderne et fluide
-- ✅ Architecture scalable
+- ✅ Architecture scalable et maintenable
+- ✅ Navigation complète entre tous les écrans
+
+## 🎉 Résumé des Réalisations
+
+### Fonctionnalités Principales
+- **8 écrans** fonctionnels et interconnectés
+- **Système d'alarmes** robuste et fiable
+- **Planification intelligente** avec détection de conflits
+- **Gestion complète** des tâches, notes et statistiques
+- **Interface moderne** avec Material Design 3
+
+### Points Forts Techniques
+- Architecture MVVM propre et testable
+- Injection de dépendances avec Hilt
+- Base de données Room bien structurée
+- Navigation Compose fluide
+- Gestion d'état réactive avec Flow
+- Code modulaire et réutilisable
+
+### Prêt pour
+- ✅ Tests sur émulateur
+- ✅ Tests sur appareil réel
+- ✅ Démonstration fonctionnelle
+- ✅ Ajout de fonctionnalités avancées
+- ✅ Tests unitaires et d'intégration
 
 ---
 
-**Version actuelle** : 0.3.0 (Alpha)
+**Version actuelle** : 0.5.0 (Beta)
 **Dernière mise à jour** : Octobre 2024
-**Statut** : En développement actif
+**Statut** : Fonctionnel - Prêt pour tests

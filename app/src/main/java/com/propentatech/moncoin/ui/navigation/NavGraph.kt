@@ -10,6 +10,9 @@ import com.propentatech.moncoin.ui.screen.home.HomeScreen
 import com.propentatech.moncoin.ui.screen.settings.SettingsScreen
 import com.propentatech.moncoin.ui.screen.task.create.TaskCreateScreen
 import com.propentatech.moncoin.ui.screen.history.HistoryScreen
+import com.propentatech.moncoin.ui.screen.notes.NotesScreen
+import com.propentatech.moncoin.ui.screen.notes.NoteDetailScreen
+import com.propentatech.moncoin.ui.screen.statistics.StatisticsScreen
 
 @Composable
 fun NavGraph(
@@ -59,6 +62,41 @@ fun NavGraph(
             )
         }
         
+        composable(Screen.Notes.route) {
+            NotesScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToNoteDetail = { noteId ->
+                    navController.navigate(Screen.NoteDetail.createRoute(noteId))
+                },
+                onNavigateToNoteCreate = {
+                    navController.navigate("note_detail/new")
+                }
+            )
+        }
+        
+        composable(
+            route = Screen.NoteDetail.route,
+            arguments = listOf(
+                navArgument("noteId") { type = NavType.StringType }
+            )
+        ) {
+            NoteDetailScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable(Screen.Statistics.route) {
+            StatisticsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onNavigateBack = {
@@ -67,6 +105,6 @@ fun NavGraph(
             )
         }
         
-        // TODO: Add other screens (Notes, Statistics, TaskDetail)
+        // TODO: Add other screens (TaskDetail)
     }
 }
