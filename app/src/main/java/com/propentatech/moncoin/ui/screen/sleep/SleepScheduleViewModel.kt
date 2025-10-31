@@ -36,15 +36,16 @@ class SleepScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             sleepScheduleRepository.getSleepSchedule()
                 .collect { schedule ->
+                    val currentState = _uiState.value
                     if (schedule != null) {
-                        _uiState.value = SleepScheduleUiState(
+                        _uiState.value = currentState.copy(
                             sleepSchedule = schedule,
                             startTime = schedule.getStartLocalTime(),
                             endTime = schedule.getEndLocalTime(),
                             isLoading = false
                         )
                     } else {
-                        _uiState.value = _uiState.value.copy(isLoading = false)
+                        _uiState.value = currentState.copy(isLoading = false)
                     }
                 }
         }
@@ -61,7 +62,8 @@ class SleepScheduleViewModel @Inject constructor(
     fun saveSleepSchedule() {
         val state = _uiState.value
         
-        _uiState.value = state.copy(isLoading = true, error = null)
+        android.util.Log.d("SleepScheduleVM", "Saving sleep schedule: ${state.startTime} - ${state.endTime}")
+        _uiState.value = state.copy(isLoading = true, error = null, isSaved = false)
         
         viewModelScope.launch {
             try {
@@ -74,9 +76,11 @@ class SleepScheduleViewModel @Inject constructor(
                 // Use insert with REPLACE strategy instead of update
                 sleepScheduleRepository.insertSleepSchedule(schedule)
                 
-                _uiState.value = state.copy(isLoading = false, isSaved = true)
+                android.util.Log.d("SleepScheduleVM", "Sleep schedule saved successfully")
+                _uiState.value = _uiState.value.copy(isLoading = false, isSaved = true)
             } catch (e: Exception) {
-                _uiState.value = state.copy(
+                android.util.Log.e("SleepScheduleVM", "Error saving sleep schedule", e)
+                _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = "Erreur lors de la sauvegarde: ${e.message}"
                 )

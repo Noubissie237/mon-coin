@@ -48,7 +48,16 @@ fun NavGraph(
             )
         }
         
-        composable(Screen.TaskCreate.route) {
+        composable(
+            route = Screen.TaskCreate.route,
+            arguments = listOf(
+                navArgument("taskId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) {
             TaskCreateScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -67,8 +76,7 @@ fun NavGraph(
                     navController.popBackStack()
                 },
                 onNavigateToEdit = { taskId ->
-                    // TODO: Implement edit screen
-                    navController.navigate(Screen.TaskCreate.route)
+                    navController.navigate(Screen.TaskCreate.createRoute(taskId))
                 }
             )
         }

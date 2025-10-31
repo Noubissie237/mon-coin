@@ -73,6 +73,11 @@
             android:name=".alarm.AlarmRescheduleService"
             android:exported="false" />
 
+        <!-- Task Monitor Service -->
+        <service
+            android:name=".service.TaskMonitorService"
+            android:exported="false" />
+
         <!-- FileProvider for sharing files -->
         <provider
             android:name="androidx.core.content.FileProvider"

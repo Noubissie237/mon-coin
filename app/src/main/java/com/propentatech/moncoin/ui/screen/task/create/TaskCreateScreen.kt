@@ -49,7 +49,9 @@ fun TaskCreateScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nouvelle tâche") },
+                title = { 
+                    Text(if (uiState.taskId != null) "Modifier la tâche" else "Nouvelle tâche") 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
@@ -135,6 +137,16 @@ fun TaskCreateScreen(
                         selected = uiState.taskType == TaskType.PERIODIQUE,
                         onClick = { viewModel.updateTaskType(TaskType.PERIODIQUE) },
                         modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            
+            // Date selection (for PONCTUELLE)
+            if (uiState.taskType == TaskType.PONCTUELLE) {
+                item {
+                    DatePickerSection(
+                        selectedDate = uiState.selectedDate,
+                        onDateChange = { viewModel.updateSelectedDate(it) }
                     )
                 }
             }
@@ -320,9 +332,13 @@ fun DurationPicker(
             Spacer(modifier = Modifier.height(8.dp))
             Slider(
                 value = durationMinutes.toFloat(),
-                onValueChange = { onDurationChange(it.toInt()) },
+                onValueChange = { value ->
+                    // Arrondir à la tranche de 15 minutes la plus proche
+                    val roundedValue = (value / 15).toInt() * 15
+                    onDurationChange(roundedValue)
+                },
                 valueRange = 15f..480f,
-                steps = 18
+                steps = 30 // (480 - 15) / 15 - 1 = 30 steps pour des paliers de 15 min
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -440,6 +456,99 @@ fun ReminderSection(
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerSection(
+    selectedDate: java.time.LocalDateTime,
+    onDateChange: (java.time.LocalDateTime) -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Date de la tâche",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Quick date selection buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val today = java.time.LocalDateTime.now()
+                val tomorrow = today.plusDays(1)
+                
+                FilterChip(
+                    selected = selectedDate.toLocalDate() == today.toLocalDate(),
+                    onClick = { onDateChange(today) },
+                    label = { Text("Aujourd'hui") },
+                    modifier = Modifier.weight(1f)
+                )
+                
+                FilterChip(
+                    selected = selectedDate.toLocalDate() == tomorrow.toLocalDate(),
+                    onClick = { onDateChange(tomorrow) },
+                    label = { Text("Demain") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Custom date button
+            OutlinedButton(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.CalendarToday, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = selectedDate.format(java.time.format.DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy", Locale.FRENCH))
+                )
+            }
+        }
+    }
+    
+    // Date picker dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val instant = java.time.Instant.ofEpochMilli(millis)
+                            val newDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                            onDateChange(newDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Annuler")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }

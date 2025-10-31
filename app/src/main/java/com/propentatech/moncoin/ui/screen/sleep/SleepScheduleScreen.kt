@@ -32,8 +32,13 @@ fun SleepScheduleScreen(
     
     // Show success message
     LaunchedEffect(uiState.isSaved) {
+        android.util.Log.d("SleepScheduleScreen", "isSaved changed: ${uiState.isSaved}")
         if (uiState.isSaved) {
-            snackbarHostState.showSnackbar("Plage de sommeil enregistrée")
+            android.util.Log.d("SleepScheduleScreen", "Showing success message")
+            snackbarHostState.showSnackbar(
+                message = "Plage de sommeil mise à jour avec succès",
+                duration = SnackbarDuration.Short
+            )
             viewModel.resetSaved()
         }
     }

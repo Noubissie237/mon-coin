@@ -1,5 +1,6 @@
 package com.propentatech.moncoin.ui.screen.task.create
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.propentatech.moncoin.alarm.AlarmScheduler
@@ -20,6 +21,7 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 data class TaskCreateUiState(
+    val taskId: String? = null, // null = création, non-null = édition
     val title: String = "",
     val description: String = "",
     val tags: List<String> = emptyList(),
@@ -45,11 +47,51 @@ class TaskCreateViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val occurrenceRepository: OccurrenceRepository,
     private val alarmScheduler: AlarmScheduler,
-    private val schedulingService: SchedulingService
+    private val schedulingService: SchedulingService,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    
+    private val taskId: String? = savedStateHandle["taskId"]
     
     private val _uiState = MutableStateFlow(TaskCreateUiState())
     val uiState: StateFlow<TaskCreateUiState> = _uiState.asStateFlow()
+    
+    init {
+        // Si taskId est fourni, charger la tâche pour édition
+        taskId?.let { loadTask(it) }
+    }
+    
+    private fun loadTask(taskId: String) {
+        viewModelScope.launch {
+            try {
+                val task = taskRepository.getTaskById(taskId)
+                if (task != null) {
+                    _uiState.value = TaskCreateUiState(
+                        taskId = task.id,
+                        title = task.title,
+                        description = task.description,
+                        tags = task.tags,
+                        taskType = task.type,
+                        taskMode = task.mode,
+                        durationMinutes = task.durationMinutes ?: 60,
+                        startTime = task.startTime?.toLocalTime(),
+                        endTime = task.endTime?.toLocalTime(),
+                        selectedDate = task.startTime ?: LocalDateTime.now(),
+                        selectedDaysOfWeek = task.recurrence?.daysOfWeek ?: emptyList(),
+                        reminders = task.reminders,
+                        alarmsEnabled = task.alarmsEnabled,
+                        notificationsEnabled = task.notificationsEnabled,
+                        priority = task.priority,
+                        color = task.color
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "Erreur lors du chargement de la tâche: ${e.message}"
+                )
+            }
+        }
+    }
     
     fun updateTitle(title: String) {
         _uiState.value = _uiState.value.copy(title = title)
@@ -187,7 +229,7 @@ class TaskCreateViewModel @Inject constructor(
                     }
                 }
                 
-                // Create task entity
+                // Create or update task entity
                 val recurrence = if (state.taskType != TaskType.PONCTUELLE) {
                     Recurrence(
                         daysOfWeek = state.selectedDaysOfWeek,
@@ -195,28 +237,54 @@ class TaskCreateViewModel @Inject constructor(
                     )
                 } else null
                 
-                val task = TaskEntity(
-                    title = state.title,
-                    description = state.description,
-                    tags = state.tags,
-                    type = state.taskType,
-                    recurrence = recurrence,
-                    mode = state.taskMode,
-                    durationMinutes = if (state.taskMode == TaskMode.DUREE) state.durationMinutes else null,
-                    startTime = if (state.taskMode == TaskMode.PLAGE) {
-                        state.selectedDate.toLocalDate().atTime(state.startTime!!)
-                    } else null,
-                    endTime = if (state.taskMode == TaskMode.PLAGE) {
-                        state.selectedDate.toLocalDate().atTime(state.endTime!!)
-                    } else null,
-                    reminders = state.reminders,
-                    alarmsEnabled = state.alarmsEnabled,
-                    notificationsEnabled = state.notificationsEnabled,
-                    priority = state.priority,
-                    color = state.color
-                )
+                val task = if (state.taskId != null) {
+                    // Mode édition : récupérer la tâche existante et la mettre à jour
+                    val existingTask = taskRepository.getTaskById(state.taskId)
+                    existingTask?.copy(
+                        title = state.title,
+                        description = state.description,
+                        tags = state.tags,
+                        type = state.taskType,
+                        recurrence = recurrence,
+                        mode = state.taskMode,
+                        durationMinutes = if (state.taskMode == TaskMode.DUREE) state.durationMinutes else null,
+                        startTime = if (state.taskMode == TaskMode.PLAGE) {
+                            state.selectedDate.toLocalDate().atTime(state.startTime!!)
+                        } else null,
+                        endTime = if (state.taskMode == TaskMode.PLAGE) {
+                            state.selectedDate.toLocalDate().atTime(state.endTime!!)
+                        } else null,
+                        reminders = state.reminders,
+                        alarmsEnabled = state.alarmsEnabled,
+                        notificationsEnabled = state.notificationsEnabled,
+                        priority = state.priority,
+                        color = state.color
+                    ) ?: return@launch
+                } else {
+                    // Mode création : créer une nouvelle tâche
+                    TaskEntity(
+                        title = state.title,
+                        description = state.description,
+                        tags = state.tags,
+                        type = state.taskType,
+                        recurrence = recurrence,
+                        mode = state.taskMode,
+                        durationMinutes = if (state.taskMode == TaskMode.DUREE) state.durationMinutes else null,
+                        startTime = if (state.taskMode == TaskMode.PLAGE) {
+                            state.selectedDate.toLocalDate().atTime(state.startTime!!)
+                        } else null,
+                        endTime = if (state.taskMode == TaskMode.PLAGE) {
+                            state.selectedDate.toLocalDate().atTime(state.endTime!!)
+                        } else null,
+                        reminders = state.reminders,
+                        alarmsEnabled = state.alarmsEnabled,
+                        notificationsEnabled = state.notificationsEnabled,
+                        priority = state.priority,
+                        color = state.color
+                    )
+                }
                 
-                // Save task
+                // Save or update task
                 taskRepository.insertTask(task)
                 
                 // Create occurrence only for PLAGE mode

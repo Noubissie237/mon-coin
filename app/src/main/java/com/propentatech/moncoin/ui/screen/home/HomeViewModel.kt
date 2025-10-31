@@ -1,5 +1,7 @@
 package com.propentatech.moncoin.ui.screen.home
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.propentatech.moncoin.alarm.AlarmScheduler
@@ -8,7 +10,9 @@ import com.propentatech.moncoin.data.local.entity.TaskEntity
 import com.propentatech.moncoin.data.model.TaskState
 import com.propentatech.moncoin.data.repository.OccurrenceRepository
 import com.propentatech.moncoin.data.repository.TaskRepository
+import com.propentatech.moncoin.service.TaskMonitorService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -35,6 +39,7 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val taskRepository: TaskRepository,
     private val occurrenceRepository: OccurrenceRepository,
     private val alarmScheduler: AlarmScheduler
@@ -125,6 +130,10 @@ class HomeViewModel @Inject constructor(
                 
                 // Update task state
                 taskRepository.updateTaskState(task.id, TaskState.RUNNING)
+                
+                // Start monitoring service to check task completion
+                val serviceIntent = Intent(context, TaskMonitorService::class.java)
+                context.startService(serviceIntent)
             }
         }
     }

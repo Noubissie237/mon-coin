@@ -2,7 +2,9 @@ package com.propentatech.moncoin.ui.navigation
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
-    object TaskCreate : Screen("task_create")
+    object TaskCreate : Screen("task_create?taskId={taskId}") {
+        fun createRoute(taskId: String? = null) = if (taskId != null) "task_create?taskId=$taskId" else "task_create"
+    }
     object TaskDetail : Screen("task_detail/{taskId}") {
         fun createRoute(taskId: String) = "task_detail/$taskId"
     }
