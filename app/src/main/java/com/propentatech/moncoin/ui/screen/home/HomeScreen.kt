@@ -170,12 +170,13 @@ fun HomeScreen(
                         )
                     }
                     
-                    items(uiState.todayOccurrences) { occurrence ->
+                    items(uiState.todayOccurrences) { occurrenceWithTask ->
                         OccurrenceCard(
-                            startTime = occurrence.startAt.format(DateTimeFormatter.ofPattern("HH:mm")),
-                            endTime = occurrence.endAt.format(DateTimeFormatter.ofPattern("HH:mm")),
-                            state = occurrence.state.name,
-                            onClick = { onNavigateToTaskDetail(occurrence.taskId) }
+                            title = occurrenceWithTask.taskTitle,
+                            startTime = occurrenceWithTask.occurrence.startAt.format(DateTimeFormatter.ofPattern("HH:mm")),
+                            endTime = occurrenceWithTask.occurrence.endAt.format(DateTimeFormatter.ofPattern("HH:mm")),
+                            state = occurrenceWithTask.occurrence.state.name,
+                            onClick = { onNavigateToTaskDetail(occurrenceWithTask.occurrence.taskId) }
                         )
                     }
                 }
@@ -289,6 +290,7 @@ fun TaskCard(
 
 @Composable
 fun OccurrenceCard(
+    title: String,
     startTime: String,
     endTime: String,
     state: String,
@@ -305,24 +307,30 @@ fun OccurrenceCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Schedule,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "$startTime - $endTime",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = state,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))

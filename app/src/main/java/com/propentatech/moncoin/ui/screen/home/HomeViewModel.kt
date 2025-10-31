@@ -13,8 +13,13 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
 
+data class OccurrenceWithTask(
+    val occurrence: OccurrenceEntity,
+    val taskTitle: String
+)
+
 data class HomeUiState(
-    val todayOccurrences: List<OccurrenceEntity> = emptyList(),
+    val todayOccurrences: List<OccurrenceWithTask> = emptyList(),
     val runningTasks: List<TaskEntity> = emptyList(),
     val scheduledTasksCount: Int = 0,
     val completedTasksCount: Int = 0,
@@ -46,8 +51,17 @@ class HomeViewModel @Inject constructor(
                 taskRepository.getTaskCountByState(TaskState.SCHEDULED),
                 taskRepository.getTaskCountByState(TaskState.COMPLETED)
             ) { occurrences, runningTasks, scheduledCount, completedCount ->
+                // Enrichir les occurrences avec les titres des tâches
+                val occurrencesWithTasks = occurrences.map { occurrence ->
+                    val task = taskRepository.getTaskById(occurrence.taskId)
+                    OccurrenceWithTask(
+                        occurrence = occurrence,
+                        taskTitle = task?.title ?: "Tâche inconnue"
+                    )
+                }
+                
                 HomeUiState(
-                    todayOccurrences = occurrences,
+                    todayOccurrences = occurrencesWithTasks,
                     runningTasks = runningTasks,
                     scheduledTasksCount = scheduledCount,
                     completedTasksCount = completedCount,
