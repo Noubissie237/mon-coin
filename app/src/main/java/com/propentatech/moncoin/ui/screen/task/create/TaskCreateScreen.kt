@@ -257,11 +257,36 @@ fun TaskCreateScreen(
             
             // Reminders
             item {
-                Text(
-                    text = "Rappels",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                var showReminderInfoDialog by remember { mutableStateOf(false) }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Rappels",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    IconButton(
+                        onClick = { showReminderInfoDialog = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Information sur les rappels",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                if (showReminderInfoDialog) {
+                    ReminderInfoDialog(
+                        onDismiss = { showReminderInfoDialog = false }
+                    )
+                }
             }
             
             item {
@@ -311,10 +336,43 @@ fun TaskCreateScreen(
             
             // Priority
             item {
-                PrioritySelector(
-                    priority = uiState.priority,
-                    onPriorityChange = { viewModel.updatePriority(it) }
-                )
+                var showPriorityInfoDialog by remember { mutableStateOf(false) }
+                
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Priorité",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        IconButton(
+                            onClick = { showPriorityInfoDialog = true },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = "Information sur la priorité",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    
+                    PrioritySelector(
+                        priority = uiState.priority,
+                        onPriorityChange = { viewModel.updatePriority(it) }
+                    )
+                }
+                
+                if (showPriorityInfoDialog) {
+                    PriorityInfoDialog(
+                        onDismiss = { showPriorityInfoDialog = false }
+                    )
+                }
             }
         }
     }
@@ -830,5 +888,225 @@ fun TaskTypeInfoItem(
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             )
         }
+    }
+}
+
+@Composable
+fun ReminderInfoDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = {
+            Text(
+                text = "Rappels",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Les rappels vous permettent d'être notifié avant le début d'une tâche.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                HorizontalDivider()
+                
+                Text(
+                    text = "Comment ça marche ?",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ReminderInfoItem(
+                        time = "10 minutes avant",
+                        description = "Vous recevrez une notification 10 minutes avant l'heure de début de la tâche."
+                    )
+                    ReminderInfoItem(
+                        time = "30 minutes avant",
+                        description = "Idéal pour les tâches nécessitant une préparation."
+                    )
+                    ReminderInfoItem(
+                        time = "1 heure avant",
+                        description = "Pour ne pas oublier vos rendez-vous importants."
+                    )
+                }
+                
+                HorizontalDivider()
+                
+                Text(
+                    text = "Astuce",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Vous pouvez ajouter plusieurs rappels pour une même tâche. Les notifications doivent être activées pour recevoir les rappels.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Compris")
+            }
+        }
+    )
+}
+
+@Composable
+fun ReminderInfoItem(
+    time: String,
+    description: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = Icons.Default.AccessTime,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Column {
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun PriorityInfoDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.PriorityHigh,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = {
+            Text(
+                text = "Priorité des tâches",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "La priorité vous aide à organiser vos tâches selon leur importance.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                HorizontalDivider()
+                
+                Text(
+                    text = "Niveaux de priorité",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    PriorityInfoItem(
+                        level = "🔵 Basse",
+                        description = "Tâches non urgentes qui peuvent être faites plus tard.",
+                        example = "Exemple : Ranger ma chambre, repondre à mes messages"
+                    )
+                    
+                    PriorityInfoItem(
+                        level = "🟡 Normale",
+                        description = "Tâches courantes de votre routine quotidienne.",
+                        example = "Exemple : Faire du sport, étudier"
+                    )
+                    
+                    PriorityInfoItem(
+                        level = "🔴 Haute",
+                        description = "Tâches importantes et urgentes à faire en priorité.",
+                        example = "Exemple : Rendez-vous médical, deadline de projet"
+                    )
+                }
+                
+                HorizontalDivider()
+                
+                Text(
+                    text = "Conseil",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Les tâches de haute priorité apparaîtront en premier dans votre liste pour vous aider à vous concentrer sur l'essentiel.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Compris")
+            }
+        }
+    )
+}
+
+@Composable
+fun PriorityInfoItem(
+    level: String,
+    description: String,
+    example: String
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = level,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = example,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+        )
     }
 }
