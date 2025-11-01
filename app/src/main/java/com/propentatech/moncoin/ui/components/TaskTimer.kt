@@ -26,6 +26,7 @@ fun TaskTimer(
 ) {
     var timeRemaining by remember { mutableStateOf(Duration.ZERO) }
     var isOverdue by remember { mutableStateOf(false) }
+    var isFinished by remember { mutableStateOf(false) }
     
     // Mettre à jour le timer toutes les secondes
     LaunchedEffect(endTime) {
@@ -34,8 +35,11 @@ fun TaskTimer(
             val duration = Duration.between(now, endTime)
             
             if (duration.isNegative) {
+                // Le temps est écoulé, arrêter le timer à 00:00
                 isOverdue = true
-                timeRemaining = duration.abs()
+                isFinished = true
+                timeRemaining = Duration.ZERO
+                break // Arrêter la boucle
             } else {
                 isOverdue = false
                 timeRemaining = duration
@@ -55,7 +59,7 @@ fun TaskTimer(
     }
     
     val color = when {
-        isOverdue -> MaterialTheme.colorScheme.error
+        isFinished -> MaterialTheme.colorScheme.error
         timeRemaining.toMinutes() < 5 -> MaterialTheme.colorScheme.error
         timeRemaining.toMinutes() < 15 -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.primary
@@ -75,7 +79,7 @@ fun TaskTimer(
                 tint = color
             )
             Text(
-                text = if (isOverdue) "+$timeText" else timeText,
+                text = timeText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = color,
                 fontWeight = FontWeight.Bold
@@ -102,7 +106,7 @@ fun TaskTimer(
                 )
                 Column {
                     Text(
-                        text = if (isOverdue) "Dépassé de" else "Temps restant",
+                        text = if (isFinished) "Temps écoulé" else "Temps restant",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

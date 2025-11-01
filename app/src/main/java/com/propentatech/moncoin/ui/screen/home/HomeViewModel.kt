@@ -71,14 +71,15 @@ class HomeViewModel @Inject constructor(
                 occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay),
                 taskRepository.getAllTasks()
             ) { occurrences, allTasks ->
-                // Enrichir les occurrences avec les titres des tâches
+                // Enrichir les occurrences avec les titres des tâches et trier
+                // Les tâches non terminées en haut, les terminées en bas
                 val occurrencesWithTasks = occurrences.map { occurrence ->
                     val task = allTasks.find { it.id == occurrence.taskId }
                     OccurrenceWithTask(
                         occurrence = occurrence,
                         taskTitle = task?.title ?: "Tâche inconnue"
                     )
-                }
+                }.sortedBy { it.occurrence.state == TaskState.COMPLETED }
                 
                 // Compter les occurrences par état
                 val scheduledCount = occurrences.count { it.state == TaskState.SCHEDULED }
@@ -99,10 +100,11 @@ class HomeViewModel @Inject constructor(
                 }
                 
                 // Récupérer les tâches en mode FLEXIBLE (programmées ou terminées du jour)
+                // Triées: non terminées en haut, terminées en bas
                 val flexibleTasks = allTasks.filter { task ->
                     task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE 
                     && (task.state == TaskState.SCHEDULED || task.state == TaskState.COMPLETED)
-                }
+                }.sortedBy { it.state == TaskState.COMPLETED }
                 
                 // Calculer le résumé du jour
                 val totalTasks = occurrences.size + durationTasks.size + flexibleTasks.size

@@ -47,7 +47,7 @@ class TaskMonitorService : Service() {
             while (isActive) {
                 try {
                     checkRunningTasks()
-                    delay(5000) // Vérifier toutes les 5 secondes
+                    delay(1000) // Vérifier chaque seconde pour une réactivité immédiate
                 } catch (e: Exception) {
                     Log.e(TAG, "Error checking running tasks", e)
                 }
@@ -69,20 +69,28 @@ class TaskMonitorService : Service() {
             when {
                 // Tâche en cours dont le temps est écoulé
                 occurrence.state == TaskState.RUNNING && occurrence.endAt.isBefore(now) -> {
-                    Log.d(TAG, "Task ${occurrence.id} time elapsed, triggering alarm")
+                    Log.d(TAG, "Task ${occurrence.id} time elapsed, marking as COMPLETED")
                     
                     // Récupérer le titre de la tâche
                     val task = taskRepository.getTaskById(occurrence.taskId)
                     val taskTitle = task?.title ?: "Tâche"
                     
-                    // Afficher la notification d'alarme
-                    notificationHelper.showTaskEndNotification(
+                    // Marquer automatiquement la tâche comme terminée
+                    occurrenceRepository.updateOccurrenceState(occurrence.id, TaskState.COMPLETED)
+                    
+                    // Mettre à jour l'état de la tâche principale si nécessaire
+                    if (task != null) {
+                        taskRepository.updateTaskState(task.id, TaskState.COMPLETED)
+                    }
+                    
+                    // Afficher la notification de succès
+                    notificationHelper.showTaskCompletedNotification(
                         occurrenceId = occurrence.id,
                         taskId = occurrence.taskId,
                         taskTitle = taskTitle
                     )
                     
-                    Log.d(TAG, "End notification shown for task: $taskTitle")
+                    Log.d(TAG, "Task completed automatically: $taskTitle")
                 }
                 
                 // Tâche programmée dont le temps de début est dépassé

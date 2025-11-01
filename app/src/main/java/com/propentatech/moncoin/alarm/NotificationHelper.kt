@@ -160,6 +160,40 @@ class NotificationHelper @Inject constructor(
     }
     
     /**
+     * Show a notification when a task is automatically completed
+     */
+    fun showTaskCompletedNotification(
+        occurrenceId: String,
+        taskId: String,
+        taskTitle: String
+    ) {
+        // Create intent to open the app
+        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            occurrenceId.hashCode() + 2000,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        // Create notification with success message
+        val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_ALARM)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("✓ $taskTitle")
+            .setContentText("Tâche terminée avec succès !")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+        
+        notificationManager.notify(occurrenceId.hashCode() + 2000, notification)
+    }
+    
+    /**
      * Cancel a notification
      */
     fun cancelNotification(notificationId: Int) {
