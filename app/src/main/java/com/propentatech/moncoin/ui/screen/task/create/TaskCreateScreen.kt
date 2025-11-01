@@ -346,34 +346,148 @@ fun DurationPicker(
     durationMinutes: Int,
     onDurationChange: (Int) -> Unit
 ) {
+    val hours = durationMinutes / 60
+    val minutes = durationMinutes % 60
+    
     Card {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Durée : ${TimeFormatUtils.formatDuration(durationMinutes)}",
-                style = MaterialTheme.typography.titleSmall
+                text = "Durée",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Slider(
-                value = durationMinutes.toFloat(),
-                onValueChange = { value ->
-                    // Arrondir à la tranche de 15 minutes la plus proche
-                    val roundedValue = (value / 15).toInt() * 15
-                    onDurationChange(roundedValue)
-                },
-                valueRange = 15f..480f,
-                steps = 30 // (480 - 15) / 15 - 1 = 30 steps pour des paliers de 15 min
-            )
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("15 min", style = MaterialTheme.typography.bodySmall)
-                Text("8h", style = MaterialTheme.typography.bodySmall)
+                // Heures
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Heures",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = hours.toString(),
+                        onValueChange = { newValue ->
+                            val newHours = newValue.toIntOrNull()?.coerceIn(0, 8) ?: 0
+                            onDurationChange(newHours * 60 + minutes)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography.headlineMedium.copy(
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        ),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        )
+                    )
+                    // Boutons + et -
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = { 
+                                if (hours > 0) {
+                                    onDurationChange((hours - 1) * 60 + minutes)
+                                }
+                            },
+                            enabled = hours > 0
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "Diminuer heures")
+                        }
+                        IconButton(
+                            onClick = { 
+                                if (hours < 8) {
+                                    onDurationChange((hours + 1) * 60 + minutes)
+                                }
+                            },
+                            enabled = hours < 8
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Augmenter heures")
+                        }
+                    }
+                }
+                
+                Text(
+                    text = ":",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                // Minutes
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Minutes",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = String.format("%02d", minutes),
+                        onValueChange = { newValue ->
+                            val newMinutes = newValue.toIntOrNull()?.coerceIn(0, 59) ?: 0
+                            onDurationChange(hours * 60 + newMinutes)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography.headlineMedium.copy(
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        ),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        )
+                    )
+                    // Boutons + et -
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = { 
+                                if (minutes > 0) {
+                                    onDurationChange(hours * 60 + minutes - 1)
+                                }
+                            },
+                            enabled = minutes > 0
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "Diminuer minutes")
+                        }
+                        IconButton(
+                            onClick = { 
+                                if (minutes < 59) {
+                                    onDurationChange(hours * 60 + minutes + 1)
+                                }
+                            },
+                            enabled = minutes < 59
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Augmenter minutes")
+                        }
+                    }
+                }
             }
+            
+            // Affichage de la durée totale
+            Text(
+                text = "Durée totale : ${TimeFormatUtils.formatDuration(durationMinutes)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
