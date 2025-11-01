@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -100,7 +101,7 @@ fun TaskCreateScreen(
                 OutlinedTextField(
                     value = uiState.description,
                     onValueChange = { viewModel.updateDescription(it) },
-                    label = { Text("Description") },
+                    label = { Text("Description (Optionnel)") },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     maxLines = 5
@@ -109,11 +110,36 @@ fun TaskCreateScreen(
             
             // Task Type
             item {
-                Text(
-                    text = "Type de tâche",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                var showTaskTypeInfoDialog by remember { mutableStateOf(false) }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Type de tâche",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    IconButton(
+                        onClick = { showTaskTypeInfoDialog = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Information sur les types de tâches",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                if (showTaskTypeInfoDialog) {
+                    TaskTypeInfoDialog(
+                        onDismiss = { showTaskTypeInfoDialog = false }
+                    )
+                }
             }
             
             item {
@@ -587,6 +613,108 @@ fun PrioritySelector(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun TaskTypeInfoDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = {
+            Text(
+                text = "Types de tâches",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Ponctuelle
+                TaskTypeInfoItem(
+                    icon = Icons.Default.DateRange,
+                    title = "Ponctuelle",
+                    description = "Une tâche qui se produit une seule fois à une date précise.",
+                    example = "Exemple : Rendez-vous chez le médecin le 15 novembre"
+                )
+                
+                HorizontalDivider()
+                
+                // Quotidienne
+                TaskTypeInfoItem(
+                    icon = Icons.Default.Refresh,
+                    title = "Quotidienne",
+                    description = "Une tâche qui se répète tous les jours.",
+                    example = "Exemple : Faire du sport, étudier, lire un livre"
+                )
+                
+                HorizontalDivider()
+                
+                // Périodique
+                TaskTypeInfoItem(
+                    icon = Icons.Default.CalendarMonth,
+                    title = "Périodique",
+                    description = "Une tâche qui se répète certains jours de la semaine.",
+                    example = "Exemple : Cours de natation le lundi et mercredi, réunion d'équipe le vendredi"
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Compris")
+            }
+        }
+    )
+}
+
+@Composable
+fun TaskTypeInfoItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    example: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = example,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            )
         }
     }
 }
