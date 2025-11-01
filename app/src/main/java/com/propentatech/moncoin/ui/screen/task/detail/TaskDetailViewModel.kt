@@ -49,29 +49,39 @@ class TaskDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             
-            val task = taskRepository.getTaskById(taskId)
-            if (task != null) {
-                // Load occurrences for this task
-                val now = LocalDateTime.now()
+            // Observer les changements de la tâche en temps réel
+            combine(
+                taskRepository.getTaskByIdFlow(taskId),
                 occurrenceRepository.getOccurrencesBetween(
-                    now.minusMonths(1),
-                    now.plusMonths(1)
-                ).collect { allOccurrences ->
+                    LocalDateTime.now().minusMonths(1),
+                    LocalDateTime.now().plusMonths(1)
+                )
+            ) { task, allOccurrences ->
+                if (task != null) {
                     val taskOccurrences = allOccurrences.filter { it.taskId == taskId }
-                    
-                    _uiState.value = TaskDetailUiState(
+                    TaskDetailUiState(
                         task = task,
                         occurrences = taskOccurrences.sortedBy { it.startAt },
                         isLoading = false
                     )
+                } else {
+                    TaskDetailUiState(
+                        isLoading = false,
+                        error = "Tâche introuvable"
+                    )
                 }
-            } else {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = "Tâche introuvable"
-                )
+            }.collect { newState ->
+                _uiState.value = newState
             }
         }
+    }
+    
+    /**
+     * Recharge manuellement les détails de la tâche
+     * Utile après une modification
+     */
+    fun refreshTaskDetails() {
+        loadTaskDetails()
     }
     
     fun deleteTask() {
