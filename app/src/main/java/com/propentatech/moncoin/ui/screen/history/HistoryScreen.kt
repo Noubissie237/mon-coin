@@ -55,32 +55,75 @@ fun HistoryScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Filters
-            LazyRow(
+            // Date Filters
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    FilterChip(
-                        selected = uiState.selectedFilter == null,
-                        onClick = { viewModel.setFilter(null) },
-                        label = { Text("Toutes") }
-                    )
+                Text(
+                    text = "Période",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(
+                        listOf(
+                            DateFilter.TODAY to "Aujourd'hui",
+                            DateFilter.THIS_WEEK to "Cette semaine",
+                            DateFilter.THIS_MONTH to "Ce mois",
+                            DateFilter.LAST_MONTH to "Mois dernier"
+                        )
+                    ) { (filter, label) ->
+                        FilterChip(
+                            selected = uiState.selectedDateFilter == filter,
+                            onClick = { viewModel.setDateFilter(filter) },
+                            label = { Text(label) }
+                        )
+                    }
                 }
-                items(
-                    listOf(
-                        TaskState.COMPLETED to "Terminées",
-                        TaskState.MISSED to "Manquées",
-                        TaskState.CANCELLED to "Annulées"
-                    )
-                ) { (state, label) ->
-                    FilterChip(
-                        selected = uiState.selectedFilter == state,
-                        onClick = { viewModel.setFilter(state) },
-                        label = { Text(label) }
-                    )
+            }
+            
+            // State Filters
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "État",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        FilterChip(
+                            selected = uiState.selectedFilter == null,
+                            onClick = { viewModel.setFilter(null) },
+                            label = { Text("Toutes") }
+                        )
+                    }
+                    items(
+                        listOf(
+                            TaskState.COMPLETED to "Terminées",
+                            TaskState.MISSED to "Manquées",
+                            TaskState.CANCELLED to "Annulées"
+                        )
+                    ) { (state, label) ->
+                        FilterChip(
+                            selected = uiState.selectedFilter == state,
+                            onClick = { viewModel.setFilter(state) },
+                            label = { Text(label) }
+                        )
+                    }
                 }
             }
             
