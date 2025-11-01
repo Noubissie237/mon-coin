@@ -3,9 +3,11 @@ package com.propentatech.moncoin
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Intent
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.*
+import com.propentatech.moncoin.service.DailyTaskResetService
 import com.propentatech.moncoin.worker.DailyOccurrenceWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.time.Duration
@@ -23,6 +25,15 @@ class MonCoinApplication : Application(), Configuration.Provider {
         super.onCreate()
         createNotificationChannels()
         scheduleDailyOccurrenceWorker()
+        startDailyTaskResetService()
+    }
+    
+    /**
+     * Démarre le service qui réinitialise les tâches flexibles chaque jour
+     */
+    private fun startDailyTaskResetService() {
+        val serviceIntent = Intent(this, DailyTaskResetService::class.java)
+        startService(serviceIntent)
     }
     
     override val workManagerConfiguration: Configuration

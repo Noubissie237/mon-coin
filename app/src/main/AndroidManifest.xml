@@ -78,6 +78,11 @@
             android:name=".service.TaskMonitorService"
             android:exported="false" />
 
+        <!-- Daily Task Reset Service -->
+        <service
+            android:name=".service.DailyTaskResetService"
+            android:exported="false" />
+
         <!-- FileProvider for sharing files -->
         <provider
             android:name="androidx.core.content.FileProvider"

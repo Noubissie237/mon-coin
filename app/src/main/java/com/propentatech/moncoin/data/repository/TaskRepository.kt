@@ -14,6 +14,8 @@ class TaskRepository @Inject constructor(
 ) {
     fun getAllTasks(): Flow<List<TaskEntity>> = taskDao.getAllTasks()
     
+    suspend fun getAllTasksOnce(): List<TaskEntity> = taskDao.getAllTasksOnce()
+    
     suspend fun getTaskById(taskId: String): TaskEntity? = taskDao.getTaskById(taskId)
     
     fun getTaskByIdFlow(taskId: String): Flow<TaskEntity?> = taskDao.getTaskByIdFlow(taskId)
