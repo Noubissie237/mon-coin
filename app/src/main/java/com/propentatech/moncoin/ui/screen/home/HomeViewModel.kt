@@ -28,11 +28,18 @@ data class RunningTaskWithOccurrence(
     val occurrence: OccurrenceEntity
 )
 
+data class DaySummary(
+    val totalTasks: Int = 0,
+    val completedTasks: Int = 0
+)
+
 data class HomeUiState(
     val todayOccurrences: List<OccurrenceWithTask> = emptyList(),
     val runningTasks: List<RunningTaskWithOccurrence> = emptyList(),
     val durationTasks: List<TaskEntity> = emptyList(),  // DUREE mode tasks ready to start
     val flexibleTasks: List<TaskEntity> = emptyList(),  // FLEXIBLE mode tasks to complete anytime
+    val daySummary: DaySummary = DaySummary(),
+    val dailyMotivation: String = "",
     val scheduledTasksCount: Int = 0,
     val completedTasksCount: Int = 0,
     val isLoading: Boolean = true
@@ -97,11 +104,27 @@ class HomeViewModel @Inject constructor(
                     && (task.state == TaskState.SCHEDULED || task.state == TaskState.COMPLETED)
                 }
                 
+                // Calculer le résumé du jour
+                val totalTasks = occurrences.size + durationTasks.size + flexibleTasks.size
+                val completedTasksToday = occurrences.count { it.state == TaskState.COMPLETED } +
+                                         flexibleTasks.count { it.state == TaskState.COMPLETED }
+                
+                val daySummary = DaySummary(
+                    totalTasks = totalTasks,
+                    completedTasks = completedTasksToday
+                )
+                
+                // Obtenir la motivation du jour
+                val dayOfYear = today.dayOfYear
+                val motivation = com.propentatech.moncoin.data.DailyMotivations.getMotivationOfTheDay(dayOfYear)
+                
                 HomeUiState(
                     todayOccurrences = occurrencesWithTasks,
                     runningTasks = runningTasks,
                     durationTasks = durationTasks,
                     flexibleTasks = flexibleTasks,
+                    daySummary = daySummary,
+                    dailyMotivation = motivation,
                     scheduledTasksCount = scheduledCount,
                     completedTasksCount = completedCount,
                     isLoading = false

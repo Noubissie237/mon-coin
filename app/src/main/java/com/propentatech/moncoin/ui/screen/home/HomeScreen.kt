@@ -91,39 +91,12 @@ fun HomeScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Summary Cards
+                // Motivation and Summary
                 item {
-                    Text(
-                        text = "Aujourd'hui",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                    MotivationAndSummaryCard(
+                        motivation = uiState.dailyMotivation,
+                        daySummary = uiState.daySummary
                     )
-                }
-                
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        SummaryCard(
-                            title = "Programmées",
-                            count = uiState.scheduledTasksCount,
-                            icon = Icons.Default.DateRange,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SummaryCard(
-                            title = "En cours",
-                            count = uiState.runningTasks.size,
-                            icon = Icons.Default.PlayArrow,
-                            modifier = Modifier.weight(1f)
-                        )
-                        SummaryCard(
-                            title = "Terminées",
-                            count = uiState.completedTasksCount,
-                            icon = Icons.Default.Check,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
                 }
                 
                 // All Today's Tasks (unified section)
@@ -178,40 +151,6 @@ fun HomeScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun SummaryCard(
-    title: String,
-    count: Int,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = count.toString(),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

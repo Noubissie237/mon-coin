@@ -513,7 +513,7 @@ fun DataInfoDialog(
                     icon = Icons.Default.Upload,
                     title = "Exporter les données",
                     description = "Créez une sauvegarde de vos tâches et notes dans un fichier JSON. Vous pouvez choisir d'exporter uniquement les tâches, uniquement les notes, ou les deux.",
-                    example = "Astuce : Exportez régulièrement vos données pour éviter toute perte."
+                    example = "Astuce : Exportez vos données après chaque modification ou ajout important."
                 )
                 
                 HorizontalDivider()
@@ -529,12 +529,12 @@ fun DataInfoDialog(
                 HorizontalDivider()
                 
                 Text(
-                    text = "Format des données",
+                    text = "Conseil",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 Text(
-                    text = "Les données sont exportées au format JSON, un format standard et sécurisé. Vous pouvez partager ce fichier via n'importe quelle application (email, cloud, etc.).",
+                    text = "Avant de changer de téléphone, pensez à exporter vos données puis à les importer sur le nouveau, afin d’éviter de tout ressaisir manuellement.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
