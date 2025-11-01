@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.propentatech.moncoin.domain.model.TimeSlot
+import com.propentatech.moncoin.util.TimeFormatUtils
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -134,7 +135,7 @@ fun TimeSlotPicker(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = "Durée: ${slot.durationMinutes()} minutes",
+                        text = "Durée: ${TimeFormatUtils.formatDuration(slot.durationMinutes().toInt())}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -215,7 +216,7 @@ private fun TimeSlotItem(
                     color = contentColor
                 )
                 Text(
-                    text = "${slot.durationMinutes()} min",
+                    text = TimeFormatUtils.formatDuration(slot.durationMinutes().toInt()),
                     style = MaterialTheme.typography.bodySmall,
                     color = contentColor.copy(alpha = 0.7f)
                 )

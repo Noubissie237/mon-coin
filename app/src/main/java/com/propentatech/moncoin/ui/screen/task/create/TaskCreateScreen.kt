@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.data.model.TaskMode
 import com.propentatech.moncoin.data.model.TaskType
 import com.propentatech.moncoin.ui.components.TimePickerDialog
+import com.propentatech.moncoin.util.TimeFormatUtils
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.TextStyle
@@ -326,7 +327,7 @@ fun DurationPicker(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Durée : ${durationMinutes / 60}h ${durationMinutes % 60}min",
+                text = "Durée : ${TimeFormatUtils.formatDuration(durationMinutes)}",
                 style = MaterialTheme.typography.titleSmall
             )
             Spacer(modifier = Modifier.height(8.dp))

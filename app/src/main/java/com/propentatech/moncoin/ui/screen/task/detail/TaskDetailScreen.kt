@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.data.model.TaskState
 import com.propentatech.moncoin.data.model.TaskType
+import com.propentatech.moncoin.util.TimeFormatUtils
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,42 +90,6 @@ fun TaskDetailScreen(
                 // Task info
                 item {
                     TaskInfoCard(task = uiState.task!!)
-                }
-                
-                // Occurrences section
-                item {
-                    Text(
-                        text = "Occurrences (${uiState.occurrences.size})",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
-                if (uiState.occurrences.isEmpty()) {
-                    item {
-                        Card {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Aucune occurrence",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    items(uiState.occurrences) { occurrence ->
-                        OccurrenceCard(
-                            occurrence = occurrence,
-                            onComplete = { viewModel.completeOccurrence(occurrence.id) },
-                            onCancel = { viewModel.cancelOccurrence(occurrence.id) }
-                        )
-                    }
                 }
                 
                 // Action buttons section
@@ -260,10 +225,10 @@ fun TaskInfoCard(
             
             // Mode
             InfoRow(
-                label = "Mode",
+                label =  "Mode",
                 value = when (task.mode) {
                     com.propentatech.moncoin.data.model.TaskMode.DUREE -> 
-                        "Durée: ${task.durationMinutes ?: 0} min"
+                        "Durée: ${TimeFormatUtils.formatDuration(task.durationMinutes ?: 0)}"
                     com.propentatech.moncoin.data.model.TaskMode.PLAGE -> 
                         "Plage horaire"
                 }

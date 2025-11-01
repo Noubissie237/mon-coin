@@ -20,6 +20,7 @@ import com.propentatech.moncoin.data.model.TaskState
 import com.propentatech.moncoin.ui.components.BottomNavigationBar
 import com.propentatech.moncoin.ui.components.Screen
 import com.propentatech.moncoin.ui.components.TaskTimer
+import com.propentatech.moncoin.util.TimeFormatUtils
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -385,7 +386,7 @@ fun DurationTaskCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "${durationMinutes / 60}h ${durationMinutes % 60}min",
+                        text = TimeFormatUtils.formatDuration(durationMinutes),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
