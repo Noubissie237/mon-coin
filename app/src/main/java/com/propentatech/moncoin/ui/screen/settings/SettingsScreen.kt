@@ -366,7 +366,7 @@ fun AboutCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "MonCoin",
+                    text = "Move",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.primary
                 )

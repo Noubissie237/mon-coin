@@ -1,4 +1,4 @@
-# Cahier des charges — Mon Coin
+# Cahier des charges — Move
 
 **But**
 Créer une application Android native (Kotlin) de gestion de tâches, alarmes et rappels qui fonctionne en arrière-plan même si l'application est tuée, gère les répétitions, évite les chevauchements, propose une planification intelligente (gestion du sommeil), fournit historique + statistiques et un bloc‑note intégré.

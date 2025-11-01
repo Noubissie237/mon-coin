@@ -1,4 +1,4 @@
-# Mon Coin - Application de Gestion de Tâches
+# Move - Application de Gestion de Tâches
 
 Application Android native en Kotlin pour la gestion de tâches, alarmes et rappels avec fonctionnement en arrière-plan.
 

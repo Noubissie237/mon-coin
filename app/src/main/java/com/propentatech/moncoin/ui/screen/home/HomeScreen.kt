@@ -1,5 +1,6 @@
 package com.propentatech.moncoin.ui.screen.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,11 +11,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.data.model.TaskState
 import com.propentatech.moncoin.ui.components.BottomNavigationBar
@@ -40,17 +43,22 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = Color(0xFF38B6FF), fontWeight = FontWeight.ExtraBold)) {
-                                append("Mon")
-                            }
-                            append(" ")
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                append("Coin")
-                            }
-                        }
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = com.propentatech.moncoin.R.drawable.logo_move),
+                            contentDescription = "Logo Move",
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Text(
+                            text = "ove",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp
+                        )
+                    }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
