@@ -209,30 +209,143 @@ fun TaskCreateScreen(
             
             // Task Mode
             item {
-                Text(
-                    text = "Mode de programmation",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                var showModeInfoDialog by remember { mutableStateOf(false) }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Mode de programmation",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    IconButton(
+                        onClick = { showModeInfoDialog = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Information sur les modes",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                if (showModeInfoDialog) {
+                    TaskModeInfoDialog(
+                        onDismiss = { showModeInfoDialog = false }
+                    )
+                }
             }
             
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                var expanded by remember { mutableStateOf(false) }
+                
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it }
                 ) {
-                    TaskTypeChip(
-                        label = "Durée fixe",
-                        selected = uiState.taskMode == TaskMode.DUREE,
-                        onClick = { viewModel.updateTaskMode(TaskMode.DUREE) },
-                        modifier = Modifier.weight(1f)
+                    OutlinedTextField(
+                        value = when (uiState.taskMode) {
+                            TaskMode.DUREE -> "Durée fixe"
+                            TaskMode.PLAGE -> "Plage horaire"
+                            TaskMode.FLEXIBLE -> "Flexible (sans timing)"
+                        },
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Sélectionner un mode") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor(),
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
                     )
-                    TaskTypeChip(
-                        label = "Plage horaire",
-                        selected = uiState.taskMode == TaskMode.PLAGE,
-                        onClick = { viewModel.updateTaskMode(TaskMode.PLAGE) },
-                        modifier = Modifier.weight(1f)
-                    )
+                    
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { 
+                                Column {
+                                    Text(
+                                        text = "Durée fixe",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                    Text(
+                                        text = "Définir une durée précise",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                viewModel.updateTaskMode(TaskMode.DUREE)
+                                expanded = false
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Timer,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                        
+                        DropdownMenuItem(
+                            text = { 
+                                Column {
+                                    Text(
+                                        text = "Plage horaire",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                    Text(
+                                        text = "Heure de début et de fin",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                viewModel.updateTaskMode(TaskMode.PLAGE)
+                                expanded = false
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                        
+                        DropdownMenuItem(
+                            text = { 
+                                Column {
+                                    Text(
+                                        text = "Flexible (sans timing)",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                    Text(
+                                        text = "À faire quand vous voulez",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                viewModel.updateTaskMode(TaskMode.FLEXIBLE)
+                                expanded = false
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
                 }
             }
             
@@ -244,7 +357,7 @@ fun TaskCreateScreen(
                         onDurationChange = { viewModel.updateDuration(it) }
                     )
                 }
-            } else {
+            } else if (uiState.taskMode == TaskMode.PLAGE) {
                 item {
                     TimeRangePicker(
                         startTime = uiState.startTime,
@@ -252,6 +365,42 @@ fun TaskCreateScreen(
                         onStartTimeChange = { viewModel.updateStartTime(it) },
                         onEndTimeChange = { viewModel.updateEndTime(it) }
                     )
+                }
+            } else if (uiState.taskMode == TaskMode.FLEXIBLE) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Column {
+                                Text(
+                                    text = "Tâche flexible",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Text(
+                                    text = "Cette tâche peut être réalisée à tout moment. Marquez-la comme terminée une fois accomplie.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
             
@@ -1108,5 +1257,107 @@ fun PriorityInfoItem(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
         )
+    }
+}
+
+@Composable
+fun TaskModeInfoDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Schedule,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = {
+            Text(
+                text = "Modes de programmation",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Durée fixe
+                TaskModeInfoItem(
+                    icon = Icons.Default.Timer,
+                    title = "Durée fixe",
+                    description = "Définissez une durée précise pour votre tâche. Vous pourrez la démarrer quand vous voulez et un timer vous indiquera le temps restant.",
+                    example = "Exemple : Étudier pendant 2h, Faire du sport pendant 45min"
+                )
+                
+                HorizontalDivider()
+                
+                // Plage horaire
+                TaskModeInfoItem(
+                    icon = Icons.Default.AccessTime,
+                    title = "Plage horaire",
+                    description = "Planifiez votre tâche à une heure précise avec une heure de début et de fin. L'application vérifiera les conflits avec d'autres tâches.",
+                    example = "Exemple : Réunion de 14h à 16h, Cours de 9h à 11h"
+                )
+                
+                HorizontalDivider()
+                
+                // Flexible
+                TaskModeInfoItem(
+                    icon = Icons.Default.CheckCircle,
+                    title = "Flexible (sans timing)",
+                    description = "Créez une tâche sans contrainte de temps. Parfait pour les choses à faire dans la journée sans horaire précis. Marquez-la simplement comme terminée quand c'est fait.",
+                    example = "Exemple : Aller me coiffer, Faire les courses, Appeler un ami"
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Compris")
+            }
+        }
+    )
+}
+
+@Composable
+fun TaskModeInfoItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    example: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = example,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            )
+        }
     }
 }

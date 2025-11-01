@@ -32,6 +32,7 @@ data class HomeUiState(
     val todayOccurrences: List<OccurrenceWithTask> = emptyList(),
     val runningTasks: List<RunningTaskWithOccurrence> = emptyList(),
     val durationTasks: List<TaskEntity> = emptyList(),  // DUREE mode tasks ready to start
+    val flexibleTasks: List<TaskEntity> = emptyList(),  // FLEXIBLE mode tasks to complete anytime
     val scheduledTasksCount: Int = 0,
     val completedTasksCount: Int = 0,
     val isLoading: Boolean = true
@@ -90,10 +91,17 @@ class HomeViewModel @Inject constructor(
                     && task.state == TaskState.SCHEDULED
                 }
                 
+                // Récupérer les tâches en mode FLEXIBLE (programmées ou terminées du jour)
+                val flexibleTasks = allTasks.filter { task ->
+                    task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE 
+                    && (task.state == TaskState.SCHEDULED || task.state == TaskState.COMPLETED)
+                }
+                
                 HomeUiState(
                     todayOccurrences = occurrencesWithTasks,
                     runningTasks = runningTasks,
                     durationTasks = durationTasks,
+                    flexibleTasks = flexibleTasks,
                     scheduledTasksCount = scheduledCount,
                     completedTasksCount = completedCount,
                     isLoading = false

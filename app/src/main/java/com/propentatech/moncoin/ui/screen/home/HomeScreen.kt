@@ -126,16 +126,17 @@ fun HomeScreen(
                     }
                 }
                 
-                // Duration Tasks (ready to start)
-                if (uiState.durationTasks.isNotEmpty()) {
+                // All Today's Tasks (unified section)
+                if (uiState.todayOccurrences.isNotEmpty() || uiState.durationTasks.isNotEmpty() || uiState.flexibleTasks.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Tâches à démarrer",
+                            text = "Tâches du jour",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
                     
+                    // Duration Tasks (ready to start)
                     items(uiState.durationTasks) { task ->
                         DurationTaskCard(
                             title = task.title,
@@ -145,18 +146,8 @@ fun HomeScreen(
                             onClick = { onNavigateToTaskDetail(task.id) }
                         )
                     }
-                }
-                
-                // Today's Occurrences
-                if (uiState.todayOccurrences.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = "Tâches du jour",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
                     
+                    // Today's Occurrences
                     items(uiState.todayOccurrences) { occurrenceWithTask ->
                         OccurrenceCard(
                             title = occurrenceWithTask.taskTitle,
@@ -167,10 +158,21 @@ fun HomeScreen(
                             onClick = { onNavigateToTaskDetail(occurrenceWithTask.occurrence.taskId) }
                         )
                     }
+                    
+                    // Flexible Tasks (to complete anytime)
+                    items(uiState.flexibleTasks) { task ->
+                        FlexibleTaskCard(
+                            title = task.title,
+                            description = task.description,
+                            isCompleted = task.state == TaskState.COMPLETED,
+                            onComplete = { viewModel.completeTask(task.id) },
+                            onClick = { onNavigateToTaskDetail(task.id) }
+                        )
+                    }
                 }
                 
                 // Empty state
-                if (uiState.todayOccurrences.isEmpty() && uiState.durationTasks.isEmpty()) {
+                if (uiState.todayOccurrences.isEmpty() && uiState.durationTasks.isEmpty() && uiState.flexibleTasks.isEmpty()) {
                     item {
                         EmptyState()
                     }
@@ -303,6 +305,10 @@ fun OccurrenceCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
+                    textDecoration = if (isCompleted || isCancelled) 
+                        androidx.compose.ui.text.style.TextDecoration.LineThrough 
+                    else 
+                        null,
                     color = if (isCompleted || isCancelled) 
                         MaterialTheme.colorScheme.onSurfaceVariant 
                     else 
@@ -438,5 +444,112 @@ fun EmptyState() {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+fun FlexibleTaskCard(
+    title: String,
+    description: String,
+    isCompleted: Boolean,
+    onComplete: () -> Unit,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCompleted) 
+                MaterialTheme.colorScheme.surfaceVariant 
+            else 
+                MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    textDecoration = if (isCompleted) 
+                        androidx.compose.ui.text.style.TextDecoration.LineThrough 
+                    else 
+                        null,
+                    color = if (isCompleted) 
+                        MaterialTheme.colorScheme.onSurfaceVariant 
+                    else 
+                        MaterialTheme.colorScheme.onSurface
+                )
+                if (description.isNotEmpty()) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        textDecoration = if (isCompleted) 
+                            androidx.compose.ui.text.style.TextDecoration.LineThrough 
+                        else 
+                            null
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isCompleted) Icons.Default.CheckCircle else Icons.Default.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = if (isCompleted) 
+                            MaterialTheme.colorScheme.tertiary 
+                        else 
+                            MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = if (isCompleted) "Terminée" else "Flexible",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isCompleted) 
+                            MaterialTheme.colorScheme.tertiary 
+                        else 
+                            MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+            
+            // Complete button (only show if not completed)
+            if (!isCompleted) {
+                IconButton(
+                    onClick = { onComplete() },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Marquer comme terminée",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            } else {
+                // Show completed icon
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Tâche terminée",
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
     }
 }

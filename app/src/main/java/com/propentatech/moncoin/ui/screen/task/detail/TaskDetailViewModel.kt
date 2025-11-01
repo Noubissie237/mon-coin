@@ -151,4 +151,17 @@ class TaskDetailViewModel @Inject constructor(
             }
         }
     }
+    
+    fun completeFlexibleTask() {
+        viewModelScope.launch {
+            val task = _uiState.value.task ?: return@launch
+            
+            // Only for FLEXIBLE mode tasks
+            if (task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE) {
+                // Update task state to completed
+                // The UI will update automatically thanks to the Flow in loadTaskDetails()
+                taskRepository.updateTaskState(task.id, TaskState.COMPLETED)
+            }
+        }
+    }
 }

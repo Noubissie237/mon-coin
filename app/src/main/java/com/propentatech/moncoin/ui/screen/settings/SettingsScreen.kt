@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -142,11 +144,37 @@ fun SettingsScreen(
             }
             
             item {
-                Text(
-                    text = "Données",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                var showDataInfoDialog by remember { mutableStateOf(false) }
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Données",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    IconButton(
+                        onClick = { showDataInfoDialog = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Information sur les données",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                if (showDataInfoDialog) {
+                    DataInfoDialog(
+                        onDismiss = { showDataInfoDialog = false }
+                    )
+                }
             }
             
             item {
@@ -448,3 +476,117 @@ fun ExportDialog(
     )
 }
 
+@Composable
+fun DataInfoDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Storage,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = {
+            Text(
+                text = "Gestion des données",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Sauvegardez et restaurez vos données pour ne jamais perdre vos tâches et notes.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                HorizontalDivider()
+                
+                // Export
+                DataInfoItem(
+                    icon = Icons.Default.Upload,
+                    title = "Exporter les données",
+                    description = "Créez une sauvegarde de vos tâches et notes dans un fichier JSON. Vous pouvez choisir d'exporter uniquement les tâches, uniquement les notes, ou les deux.",
+                    example = "Astuce : Exportez régulièrement vos données pour éviter toute perte."
+                )
+                
+                HorizontalDivider()
+                
+                // Import
+                DataInfoItem(
+                    icon = Icons.Default.Download,
+                    title = "Importer les données",
+                    description = "Restaurez vos données à partir d'un fichier JSON précédemment exporté. Vos données actuelles seront remplacées par celles du fichier.",
+                    example = "Attention : L'import remplacera toutes vos données actuelles."
+                )
+                
+                HorizontalDivider()
+                
+                Text(
+                    text = "Format des données",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+                Text(
+                    text = "Les données sont exportées au format JSON, un format standard et sécurisé. Vous pouvez partager ce fichier via n'importe quelle application (email, cloud, etc.).",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Compris")
+            }
+        }
+    )
+}
+
+@Composable
+fun DataInfoItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    example: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.Top
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = example,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+            )
+        }
+    }
+}

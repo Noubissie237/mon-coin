@@ -146,6 +146,22 @@ fun TaskDetailScreen(
                                     }
                                 }
                                 
+                                // Complete button for FLEXIBLE mode tasks
+                                if (task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE 
+                                    && task.state == TaskState.SCHEDULED) {
+                                    Button(
+                                        onClick = { viewModel.completeFlexibleTask() },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        )
+                                    ) {
+                                        Icon(Icons.Default.Check, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Marquer comme terminée")
+                                    }
+                                }
+                                
                                 Button(
                                     onClick = { onNavigateToEdit(task.id) },
                                     modifier = Modifier.fillMaxWidth()
@@ -212,6 +228,34 @@ fun TaskInfoCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Completed badge for flexible tasks
+            if (task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE 
+                && task.state == TaskState.COMPLETED) {
+                Surface(
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = "Tâche terminée",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+            
             // Title
             Text(
                 text = task.title,
@@ -248,6 +292,8 @@ fun TaskInfoCard(
                         "Durée: ${TimeFormatUtils.formatDuration(task.durationMinutes ?: 0)}"
                     com.propentatech.moncoin.data.model.TaskMode.PLAGE -> 
                         "Plage horaire"
+                    com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE -> 
+                        "Flexible (sans timing)"
                 }
             )
             
