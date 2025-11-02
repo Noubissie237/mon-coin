@@ -28,16 +28,53 @@ data class RunningTaskWithOccurrence(
     val occurrence: OccurrenceEntity
 )
 
+// Structure unifiée pour toutes les tâches
+sealed class UnifiedTask {
+    abstract val isCompleted: Boolean
+    abstract val sortPriority: Int // Pour trier : 0 = en cours, 1 = programmée, 2 = terminée
+    
+    data class OccurrenceTask(
+        val occurrence: OccurrenceEntity,
+        val taskTitle: String
+    ) : UnifiedTask() {
+        override val isCompleted: Boolean = occurrence.state == TaskState.COMPLETED
+        override val sortPriority: Int = when (occurrence.state) {
+            TaskState.RUNNING -> 0
+            TaskState.SCHEDULED -> 1
+            TaskState.COMPLETED -> 2
+            TaskState.MISSED, TaskState.CANCELLED -> 2
+            else -> 1
+        }
+    }
+    
+    data class DurationTask(
+        val task: TaskEntity
+    ) : UnifiedTask() {
+        override val isCompleted: Boolean = task.state == TaskState.COMPLETED
+        override val sortPriority: Int = when (task.state) {
+            TaskState.RUNNING -> 0
+            TaskState.SCHEDULED -> 1
+            TaskState.COMPLETED -> 2
+            else -> 1
+        }
+    }
+    
+    data class FlexibleTask(
+        val task: TaskEntity
+    ) : UnifiedTask() {
+        override val isCompleted: Boolean = task.state == TaskState.COMPLETED
+        override val sortPriority: Int = if (task.state == TaskState.COMPLETED) 2 else 1
+    }
+}
+
 data class DaySummary(
     val totalTasks: Int = 0,
     val completedTasks: Int = 0
 )
 
 data class HomeUiState(
-    val todayOccurrences: List<OccurrenceWithTask> = emptyList(),
+    val allTasks: List<UnifiedTask> = emptyList(),  // Toutes les tâches unifiées et triées
     val runningTasks: List<RunningTaskWithOccurrence> = emptyList(),
-    val durationTasks: List<TaskEntity> = emptyList(),  // DUREE mode tasks ready to start
-    val flexibleTasks: List<TaskEntity> = emptyList(),  // FLEXIBLE mode tasks to complete anytime
     val daySummary: DaySummary = DaySummary(),
     val dailyMotivation: String = "",
     val scheduledTasksCount: Int = 0,
@@ -71,15 +108,39 @@ class HomeViewModel @Inject constructor(
                 occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay),
                 taskRepository.getAllTasks()
             ) { occurrences, allTasks ->
-                // Enrichir les occurrences avec les titres des tâches et trier
-                // Les tâches non terminées en haut, les terminées en bas
-                val occurrencesWithTasks = occurrences.map { occurrence ->
+                // Créer une liste unifiée de toutes les tâches
+                val unifiedTasks = mutableListOf<UnifiedTask>()
+                
+                // 1. Ajouter les occurrences (tâches PLAGE)
+                occurrences.forEach { occurrence ->
                     val task = allTasks.find { it.id == occurrence.taskId }
-                    OccurrenceWithTask(
-                        occurrence = occurrence,
-                        taskTitle = task?.title ?: "Tâche inconnue"
+                    unifiedTasks.add(
+                        UnifiedTask.OccurrenceTask(
+                            occurrence = occurrence,
+                            taskTitle = task?.title ?: "Tâche inconnue"
+                        )
                     )
-                }.sortedBy { it.occurrence.state == TaskState.COMPLETED }
+                }
+                
+                // 2. Ajouter les tâches DUREE
+                allTasks.filter { task ->
+                    task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE
+                }.forEach { task ->
+                    unifiedTasks.add(UnifiedTask.DurationTask(task))
+                }
+                
+                // 3. Ajouter les tâches FLEXIBLE
+                allTasks.filter { task ->
+                    task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE
+                }.forEach { task ->
+                    unifiedTasks.add(UnifiedTask.FlexibleTask(task))
+                }
+                
+                // Trier toutes les tâches ensemble :
+                // 0 = en cours (RUNNING) en premier
+                // 1 = programmées (SCHEDULED) au milieu
+                // 2 = terminées (COMPLETED/MISSED/CANCELLED) en dernier
+                val sortedTasks = unifiedTasks.sortedBy { it.sortPriority }
                 
                 // Compter les occurrences par état
                 val scheduledCount = occurrences.count { it.state == TaskState.SCHEDULED }
@@ -93,23 +154,9 @@ class HomeViewModel @Inject constructor(
                     task?.let { RunningTaskWithOccurrence(it, occurrence) }
                 }
                 
-                // Récupérer les tâches en mode DUREE qui peuvent être démarrées
-                val durationTasks = allTasks.filter { task ->
-                    task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE 
-                    && task.state == TaskState.SCHEDULED
-                }
-                
-                // Récupérer les tâches en mode FLEXIBLE (programmées ou terminées du jour)
-                // Triées: non terminées en haut, terminées en bas
-                val flexibleTasks = allTasks.filter { task ->
-                    task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE 
-                    && (task.state == TaskState.SCHEDULED || task.state == TaskState.COMPLETED)
-                }.sortedBy { it.state == TaskState.COMPLETED }
-                
                 // Calculer le résumé du jour
-                val totalTasks = occurrences.size + durationTasks.size + flexibleTasks.size
-                val completedTasksToday = occurrences.count { it.state == TaskState.COMPLETED } +
-                                         flexibleTasks.count { it.state == TaskState.COMPLETED }
+                val totalTasks = unifiedTasks.size
+                val completedTasksToday = unifiedTasks.count { it.isCompleted }
                 
                 val daySummary = DaySummary(
                     totalTasks = totalTasks,
@@ -121,10 +168,8 @@ class HomeViewModel @Inject constructor(
                 val motivation = com.propentatech.moncoin.data.DailyMotivations.getMotivationOfTheDay(dayOfYear)
                 
                 HomeUiState(
-                    todayOccurrences = occurrencesWithTasks,
+                    allTasks = sortedTasks,
                     runningTasks = runningTasks,
-                    durationTasks = durationTasks,
-                    flexibleTasks = flexibleTasks,
                     daySummary = daySummary,
                     dailyMotivation = motivation,
                     scheduledTasksCount = scheduledCount,

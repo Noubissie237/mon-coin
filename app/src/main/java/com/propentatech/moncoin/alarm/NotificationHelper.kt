@@ -39,7 +39,7 @@ class NotificationHelper @Inject constructor(
         )
         
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_REMINDER)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle("Rappel : $taskTitle")
             .setContentText("Commence dans $minutesBefore minutes")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -70,7 +70,7 @@ class NotificationHelper @Inject constructor(
         )
         
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_SYSTEM)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle("Tâche manquée")
             .setContentText(taskTitle)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -107,7 +107,7 @@ class NotificationHelper @Inject constructor(
         
         // Create notification with full-screen intent
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_ALARM)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle(taskTitle)
             .setContentText("Il est temps de commencer")
             .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -146,7 +146,7 @@ class NotificationHelper @Inject constructor(
         
         // Create notification with full-screen intent
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_ALARM)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle(taskTitle)
             .setContentText("Temps écoulé !")
             .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -181,7 +181,7 @@ class NotificationHelper @Inject constructor(
         
         // Create notification with success message
         val notification = NotificationCompat.Builder(context, MonCoinApplication.CHANNEL_ALARM)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_name)
             .setContentTitle("✓ $taskTitle")
             .setContentText("Tâche terminée avec succès !")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

@@ -108,7 +108,7 @@ fun HomeScreen(
                 }
                 
                 // All Today's Tasks (unified section)
-                if (uiState.todayOccurrences.isNotEmpty() || uiState.durationTasks.isNotEmpty() || uiState.flexibleTasks.isNotEmpty()) {
+                if (uiState.allTasks.isNotEmpty()) {
                     item {
                         Text(
                             text = "Tâches du jour",
@@ -117,45 +117,46 @@ fun HomeScreen(
                         )
                     }
                     
-                    // Duration Tasks (ready to start)
-                    items(uiState.durationTasks) { task ->
-                        DurationTaskCard(
-                            title = task.title,
-                            description = task.description,
-                            durationMinutes = task.durationMinutes ?: 60,
-                            onStart = { viewModel.startTask(task.id) },
-                            onComplete = { viewModel.completeTask(task.id) },
-                            onClick = { onNavigateToTaskDetail(task.id) }
-                        )
-                    }
-                    
-                    // Today's Occurrences
-                    items(uiState.todayOccurrences) { occurrenceWithTask ->
-                        OccurrenceCard(
-                            title = occurrenceWithTask.taskTitle,
-                            startTime = occurrenceWithTask.occurrence.startAt.format(DateTimeFormatter.ofPattern("HH:mm")),
-                            endTime = occurrenceWithTask.occurrence.endAt.format(DateTimeFormatter.ofPattern("HH:mm")),
-                            endDateTime = occurrenceWithTask.occurrence.endAt,
-                            state = occurrenceWithTask.occurrence.state,
-                            onComplete = { viewModel.completeOccurrence(occurrenceWithTask.occurrence.id) },
-                            onClick = { onNavigateToTaskDetail(occurrenceWithTask.occurrence.taskId) }
-                        )
-                    }
-                    
-                    // Flexible Tasks (to complete anytime)
-                    items(uiState.flexibleTasks) { task ->
-                        FlexibleTaskCard(
-                            title = task.title,
-                            description = task.description,
-                            isCompleted = task.state == TaskState.COMPLETED,
-                            onComplete = { viewModel.completeTask(task.id) },
-                            onClick = { onNavigateToTaskDetail(task.id) }
-                        )
+                    // Afficher toutes les tâches unifiées et triées
+                    items(uiState.allTasks) { unifiedTask ->
+                        when (unifiedTask) {
+                            is UnifiedTask.OccurrenceTask -> {
+                                OccurrenceCard(
+                                    title = unifiedTask.taskTitle,
+                                    startTime = unifiedTask.occurrence.startAt.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    endTime = unifiedTask.occurrence.endAt.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    endDateTime = unifiedTask.occurrence.endAt,
+                                    state = unifiedTask.occurrence.state,
+                                    onComplete = { viewModel.completeOccurrence(unifiedTask.occurrence.id) },
+                                    onClick = { onNavigateToTaskDetail(unifiedTask.occurrence.taskId) }
+                                )
+                            }
+                            is UnifiedTask.DurationTask -> {
+                                DurationTaskCard(
+                                    title = unifiedTask.task.title,
+                                    description = unifiedTask.task.description,
+                                    durationMinutes = unifiedTask.task.durationMinutes ?: 60,
+                                    isCompleted = unifiedTask.task.state == TaskState.COMPLETED,
+                                    onStart = { viewModel.startTask(unifiedTask.task.id) },
+                                    onComplete = { viewModel.completeTask(unifiedTask.task.id) },
+                                    onClick = { onNavigateToTaskDetail(unifiedTask.task.id) }
+                                )
+                            }
+                            is UnifiedTask.FlexibleTask -> {
+                                FlexibleTaskCard(
+                                    title = unifiedTask.task.title,
+                                    description = unifiedTask.task.description,
+                                    isCompleted = unifiedTask.task.state == TaskState.COMPLETED,
+                                    onComplete = { viewModel.completeTask(unifiedTask.task.id) },
+                                    onClick = { onNavigateToTaskDetail(unifiedTask.task.id) }
+                                )
+                            }
+                        }
                     }
                 }
                 
                 // Empty state
-                if (uiState.todayOccurrences.isEmpty() && uiState.durationTasks.isEmpty() && uiState.flexibleTasks.isEmpty()) {
+                if (uiState.allTasks.isEmpty()) {
                     item {
                         EmptyState()
                     }
@@ -186,9 +187,7 @@ fun OccurrenceCard(
     }
     
     val containerColor = when {
-        isCompleted -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        isMissed -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-        isCancelled -> MaterialTheme.colorScheme.surfaceVariant
+        isCompleted || isMissed || isCancelled -> MaterialTheme.colorScheme.surfaceVariant
         else -> MaterialTheme.colorScheme.surface
     }
     
@@ -323,6 +322,7 @@ fun DurationTaskCard(
     title: String,
     description: String,
     durationMinutes: Int,
+    isCompleted: Boolean = false,
     onStart: () -> Unit,
     onComplete: () -> Unit,
     onClick: () -> Unit
@@ -330,7 +330,10 @@ fun DurationTaskCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor = if (isCompleted)
+                MaterialTheme.colorScheme.surfaceVariant
+            else
+                MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
