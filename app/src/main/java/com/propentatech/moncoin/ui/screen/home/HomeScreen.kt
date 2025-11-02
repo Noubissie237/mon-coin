@@ -124,6 +124,7 @@ fun HomeScreen(
                             description = task.description,
                             durationMinutes = task.durationMinutes ?: 60,
                             onStart = { viewModel.startTask(task.id) },
+                            onComplete = { viewModel.completeTask(task.id) },
                             onClick = { onNavigateToTaskDetail(task.id) }
                         )
                     }
@@ -136,6 +137,7 @@ fun HomeScreen(
                             endTime = occurrenceWithTask.occurrence.endAt.format(DateTimeFormatter.ofPattern("HH:mm")),
                             endDateTime = occurrenceWithTask.occurrence.endAt,
                             state = occurrenceWithTask.occurrence.state,
+                            onComplete = { viewModel.completeOccurrence(occurrenceWithTask.occurrence.id) },
                             onClick = { onNavigateToTaskDetail(occurrenceWithTask.occurrence.taskId) }
                         )
                     }
@@ -170,6 +172,7 @@ fun OccurrenceCard(
     endTime: String,
     endDateTime: java.time.LocalDateTime,
     state: TaskState,
+    onComplete: () -> Unit,
     onClick: () -> Unit
 ) {
     val isRunning = state == TaskState.RUNNING
@@ -290,6 +293,21 @@ fun OccurrenceCard(
                 Spacer(modifier = Modifier.width(8.dp))
             }
             
+            // Bouton pour marquer comme terminée (si pas déjà terminée ou annulée)
+            if (!isCompleted && !isCancelled) {
+                IconButton(
+                    onClick = { onComplete() },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Marquer comme terminée",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Voir détails",
@@ -306,6 +324,7 @@ fun DurationTaskCard(
     description: String,
     durationMinutes: Int,
     onStart: () -> Unit,
+    onComplete: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -353,6 +372,18 @@ fun DurationTaskCard(
                 Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
                 Text("Démarrer", style = MaterialTheme.typography.labelLarge)
+            }
+            
+            IconButton(
+                onClick = onComplete,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Marquer comme terminée",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
             }
             
             IconButton(

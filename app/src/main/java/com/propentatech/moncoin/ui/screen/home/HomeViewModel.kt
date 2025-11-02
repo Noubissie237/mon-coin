@@ -176,4 +176,23 @@ class HomeViewModel @Inject constructor(
             taskRepository.updateTaskState(taskId, TaskState.COMPLETED)
         }
     }
+    
+    /**
+     * Marquer manuellement une occurrence comme terminée
+     * Utile quand une tâche a été manquée mais faite plus tard,
+     * ou quand l'utilisateur veut marquer comme terminée sans attendre l'alarme
+     */
+    fun completeOccurrence(occurrenceId: String) {
+        viewModelScope.launch {
+            // Mettre à jour l'état de l'occurrence
+            occurrenceRepository.updateOccurrenceState(occurrenceId, TaskState.COMPLETED)
+            
+            // Récupérer l'occurrence pour obtenir le taskId
+            val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
+            if (occurrence != null) {
+                // Mettre à jour l'état de la tâche principale
+                taskRepository.updateTaskState(occurrence.taskId, TaskState.COMPLETED)
+            }
+        }
+    }
 }
