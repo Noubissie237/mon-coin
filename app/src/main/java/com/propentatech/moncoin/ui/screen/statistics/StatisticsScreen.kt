@@ -12,7 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.ui.components.BottomNavigationBar
+import com.propentatech.moncoin.ui.components.ChartData
 import com.propentatech.moncoin.ui.components.Screen
+import com.propentatech.moncoin.ui.components.SimpleBarChart
+import com.propentatech.moncoin.ui.components.SimplePieChart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,17 +95,25 @@ fun StatisticsScreen(
                 
                 // Overview cards
                 item {
-                    Text(
-                        text = "Vue d'ensemble",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column {
+                        Text(
+                            text = "Vue d'ensemble",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Statistiques basées sur toutes les occurrences de tâches générées",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         StatCard(
                             title = "Total",
@@ -119,6 +130,12 @@ fun StatisticsScreen(
                             title = "Manquées",
                             value = uiState.missedTasks.toString(),
                             color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatCard(
+                            title = "Aujourd'hui",
+                            value = uiState.pendingTasks.toString(),
+                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -158,30 +175,140 @@ fun StatisticsScreen(
                     }
                 }
                 
-                // Time statistics
-                item {
-                    Text(
-                        text = "Temps",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+                // Pie chart - Distribution des tâches
+                if (uiState.totalTasks > 0) {
+                    item {
+                        Text(
+                            text = "Répartition des tâches",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    
+                    item {
+                        Card {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                SimplePieChart(
+                                    data = listOf(
+                                        ChartData(
+                                            label = "Terminées",
+                                            value = uiState.completedTasks.toFloat(),
+                                            color = MaterialTheme.colorScheme.primary
+                                        ),
+                                        ChartData(
+                                            label = "Manquées",
+                                            value = uiState.missedTasks.toFloat(),
+                                            color = MaterialTheme.colorScheme.error
+                                        ),
+                                        ChartData(
+                                            label = "Aujourd'hui",
+                                            value = uiState.pendingTasks.toFloat(),
+                                            color = MaterialTheme.colorScheme.tertiary
+                                        )
+                                    ).filter { it.value > 0 }
+                                )
+                            }
+                        }
+                    }
                 }
                 
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        TimeStatCard(
-                            title = "Temps total",
-                            minutes = uiState.totalTimeMinutes,
-                            modifier = Modifier.weight(1f)
+                // Bar chart - Statistiques par jour
+                if (uiState.dailyStats.any { it.total > 0 }) {
+                    item {
+                        Text(
+                            text = "Performance par jour de la semaine",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
-                        TimeStatCard(
-                            title = "Moyenne/tâche",
-                            minutes = uiState.averageTimePerTask,
-                            modifier = Modifier.weight(1f)
+                    }
+                    
+                    item {
+                        Card {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "Tâches terminées",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                SimpleBarChart(
+                                    data = uiState.dailyStats.map { day ->
+                                        ChartData(
+                                            label = day.dayName,
+                                            value = day.completed.toFloat(),
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    
+                    item {
+                        Card {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "Tâches manquées",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                SimpleBarChart(
+                                    data = uiState.dailyStats.map { day ->
+                                        ChartData(
+                                            label = day.dayName,
+                                            value = day.missed.toFloat(),
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // Interpretation
+                if (uiState.interpretation.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "Analyse de vos performances",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
+                    }
+                    
+                    item {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    text = uiState.interpretation,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
                     }
                 }
                 
