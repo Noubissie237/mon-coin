@@ -26,7 +26,9 @@ data class StatisticsUiState(
     val totalTasks: Int = 0,
     val completedTasks: Int = 0,
     val missedTasks: Int = 0,
-    val pendingTasks: Int = 0,
+    val cancelledTasks: Int = 0,
+    val runningTasks: Int = 0,
+    val scheduledTasks: Int = 0,
     val completionRate: Float = 0f,
     val totalTimeMinutes: Long = 0,
     val averageTimePerTask: Long = 0,
@@ -60,51 +62,50 @@ class StatisticsViewModel @Inject constructor(
     private fun loadStatistics() {
         viewModelScope.launch {
             val now = LocalDateTime.now()
-            val startOfToday = now.toLocalDate().atStartOfDay()
-            val endOfToday = now.toLocalDate().atTime(23, 59, 59)
             
+            // Définir les plages de dates correctement (du passé jusqu'à maintenant)
             val (startDate, endDate) = when (_uiState.value.period) {
-                StatisticsPeriod.WEEK -> Pair(now.minusWeeks(1), now.plusYears(10))
-                StatisticsPeriod.MONTH -> Pair(now.minusMonths(1), now.plusYears(10))
-                StatisticsPeriod.ALL -> Pair(LocalDateTime.of(2000, 1, 1, 0, 0), now.plusYears(10))
+                StatisticsPeriod.WEEK -> Pair(now.minusWeeks(1), now)
+                StatisticsPeriod.MONTH -> Pair(now.minusMonths(1), now)
+                StatisticsPeriod.ALL -> Pair(LocalDateTime.of(2020, 1, 1, 0, 0), now)
             }
             
-            // Récupérer toutes les occurrences (passées, présentes et futures)
-            occurrenceRepository.getOccurrencesBetween(startDate, endDate)
+            // Récupérer toutes les occurrences de la période
+            occurrenceRepository.getOccurrencesBetween(startDate, now.plusDays(1))
                 .collect { allOccurrences ->
-                    // Filtrer les occurrences selon la période
-                    val occurrences = when (_uiState.value.period) {
-                        StatisticsPeriod.ALL -> allOccurrences
-                        else -> allOccurrences.filter { it.startAt >= startDate }
-                    }
+                    // Filtrer les occurrences selon la période (seulement celles qui ont commencé)
+                    val occurrences = allOccurrences.filter { it.startAt >= startDate && it.startAt <= now }
                     
+                    // Compter par état
                     val completed = occurrences.count { it.state == TaskState.COMPLETED }
                     val missed = occurrences.count { it.state == TaskState.MISSED }
+                    val cancelled = occurrences.count { it.state == TaskState.CANCELLED }
+                    val running = occurrences.count { it.state == TaskState.RUNNING }
+                    val scheduled = occurrences.count { it.state == TaskState.SCHEDULED }
                     
-                    // "En attente" = tâches SCHEDULED d'aujourd'hui uniquement
-                    val pending = occurrences.count { 
-                        it.state == TaskState.SCHEDULED && 
-                        it.startAt >= startOfToday && 
-                        it.startAt <= endOfToday
-                    }
+                    // Total = seulement les tâches qui auraient dû être faites (exclut les futures SCHEDULED)
+                    // On compte : COMPLETED + MISSED + CANCELLED + RUNNING
+                    val total = completed + missed + cancelled + running
                     
-                    val total = occurrences.size
-                    
+                    // Taux de réussite = tâches complétées / tâches qui auraient dû être faites
                     val completionRate = if (total > 0) {
                         (completed.toFloat() / total.toFloat()) * 100
                     } else 0f
                     
-                    // Calculate total time for completed tasks
+                    // Calculer le temps total pour les tâches terminées
                     val totalMinutes = occurrences
                         .filter { it.state == TaskState.COMPLETED }
                         .sumOf { ChronoUnit.MINUTES.between(it.startAt, it.endAt) }
                     
                     val avgTime = if (completed > 0) totalMinutes / completed else 0
                     
-                    // Calculate daily statistics
-                    val dailyStats = calculateDailyStats(occurrences)
+                    // Calculer les statistiques par jour (seulement les occurrences passées)
+                    val pastOccurrences = occurrences.filter { 
+                        it.state != TaskState.SCHEDULED || it.startAt <= now 
+                    }
+                    val dailyStats = calculateDailyStats(pastOccurrences)
                     
-                    // Generate interpretation
+                    // Générer l'interprétation
                     val interpretation = generateInterpretation(
                         total, completed, missed, completionRate, dailyStats
                     )
@@ -113,7 +114,9 @@ class StatisticsViewModel @Inject constructor(
                         totalTasks = total,
                         completedTasks = completed,
                         missedTasks = missed,
-                        pendingTasks = pending,
+                        cancelledTasks = cancelled,
+                        runningTasks = running,
+                        scheduledTasks = scheduled,
                         completionRate = completionRate,
                         totalTimeMinutes = totalMinutes,
                         averageTimePerTask = avgTime,

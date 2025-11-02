@@ -111,7 +111,7 @@ class HomeViewModel @Inject constructor(
                 // Créer une liste unifiée de toutes les tâches
                 val unifiedTasks = mutableListOf<UnifiedTask>()
                 
-                // 1. Ajouter les occurrences (tâches PLAGE)
+                // 1. Ajouter les occurrences (tâches PLAGE et DUREE avec occurrence)
                 occurrences.forEach { occurrence ->
                     val task = allTasks.find { it.id == occurrence.taskId }
                     unifiedTasks.add(
@@ -122,9 +122,12 @@ class HomeViewModel @Inject constructor(
                     )
                 }
                 
-                // 2. Ajouter les tâches DUREE
+                // 2. Ajouter les tâches DUREE qui n'ont PAS d'occurrence aujourd'hui
+                // (pour éviter les doublons avec les occurrences déjà ajoutées)
+                val taskIdsWithOccurrences = occurrences.map { it.taskId }.toSet()
                 allTasks.filter { task ->
-                    task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE
+                    task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE &&
+                    task.id !in taskIdsWithOccurrences
                 }.forEach { task ->
                     unifiedTasks.add(UnifiedTask.DurationTask(task))
                 }

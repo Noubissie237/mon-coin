@@ -103,13 +103,14 @@ fun StatisticsScreen(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Statistiques basées sur toutes les occurrences de tâches générées",
+                            text = "Statistiques basées sur les tâches qui auraient dû être réalisées dans la période sélectionnée",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 
+                // Première ligne de cartes
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -132,10 +133,31 @@ fun StatisticsScreen(
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.weight(1f)
                         )
+                    }
+                }
+                
+                // Deuxième ligne de cartes
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         StatCard(
-                            title = "Aujourd'hui",
-                            value = uiState.pendingTasks.toString(),
+                            title = "Annulées",
+                            value = uiState.cancelledTasks.toString(),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatCard(
+                            title = "En cours",
+                            value = uiState.runningTasks.toString(),
                             color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatCard(
+                            title = "Programmées",
+                            value = uiState.scheduledTasks.toString(),
+                            color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -192,6 +214,13 @@ fun StatisticsScreen(
                                     .fillMaxWidth()
                                     .padding(16.dp)
                             ) {
+                                Text(
+                                    text = "Tâches qui auraient dû être faites",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
                                 SimplePieChart(
                                     data = listOf(
                                         ChartData(
@@ -205,8 +234,13 @@ fun StatisticsScreen(
                                             color = MaterialTheme.colorScheme.error
                                         ),
                                         ChartData(
-                                            label = "Aujourd'hui",
-                                            value = uiState.pendingTasks.toFloat(),
+                                            label = "Annulées",
+                                            value = uiState.cancelledTasks.toFloat(),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        ),
+                                        ChartData(
+                                            label = "En cours",
+                                            value = uiState.runningTasks.toFloat(),
                                             color = MaterialTheme.colorScheme.tertiary
                                         )
                                     ).filter { it.value > 0 }
