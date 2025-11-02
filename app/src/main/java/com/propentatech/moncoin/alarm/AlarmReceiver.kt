@@ -58,17 +58,20 @@ class AlarmReceiver : BroadcastReceiver() {
             
             // Check if we should trigger the alarm (only if RUNNING)
             if (taskStateChecker.shouldTriggerEndAlarm(occurrenceId)) {
-                Log.d(TAG, "Showing full-screen notification for task end...")
+                Log.d(TAG, "Launching full-screen alarm activity for task end...")
                 
-                // Use notification with full-screen intent instead of starting activity directly
-                // This works even when the app is killed
-                notificationHelper.showTaskEndNotification(
-                    occurrenceId = occurrenceId,
-                    taskId = taskId,
-                    taskTitle = taskTitle
-                )
+                // Launch AlarmActivity directly - this works even when app is killed
+                val alarmIntent = Intent(context, com.propentatech.moncoin.alarm.AlarmActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                           Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                           Intent.FLAG_ACTIVITY_NO_USER_ACTION
+                    putExtra(EXTRA_OCCURRENCE_ID, occurrenceId)
+                    putExtra(EXTRA_TASK_ID, taskId)
+                    putExtra(EXTRA_TASK_TITLE, taskTitle)
+                }
+                context.startActivity(alarmIntent)
                 
-                Log.d(TAG, "Full-screen notification shown successfully!")
+                Log.d(TAG, "Alarm activity launched successfully!")
             } else {
                 // Task was not started, mark as MISSED
                 val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
@@ -109,17 +112,20 @@ class AlarmReceiver : BroadcastReceiver() {
             
             // Check if we should trigger the start alarm (only if SCHEDULED)
             if (taskStateChecker.shouldTriggerStartAlarm(occurrenceId)) {
-                Log.d(TAG, "Showing full-screen notification for task start...")
+                Log.d(TAG, "Launching full-screen start activity...")
                 
-                // Use notification with full-screen intent instead of starting activity directly
-                // This works even when the app is killed
-                notificationHelper.showTaskStartNotification(
-                    occurrenceId = occurrenceId,
-                    taskId = taskId,
-                    taskTitle = taskTitle
-                )
+                // Launch TaskStartActivity directly - this works even when app is killed
+                val startIntent = Intent(context, com.propentatech.moncoin.ui.screen.task.start.TaskStartActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
+                           Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                           Intent.FLAG_ACTIVITY_NO_USER_ACTION
+                    putExtra("occurrence_id", occurrenceId)
+                    putExtra("task_id", taskId)
+                    putExtra("task_title", taskTitle)
+                }
+                context.startActivity(startIntent)
                 
-                Log.d(TAG, "Full-screen notification shown successfully!")
+                Log.d(TAG, "Start activity launched successfully!")
             } else {
                 Log.w(TAG, "Task is not in SCHEDULED state, not triggering start alarm")
             }
@@ -150,7 +156,15 @@ class AlarmReceiver : BroadcastReceiver() {
     }
     
     private fun handleBootCompleted(context: Context) {
-        Log.d(TAG, "Boot completed - rescheduling alarms")
+        Log.d(TAG, "Boot completed - rescheduling alarms and starting foreground service")
+        
+        // Start the foreground service to keep app running in background
+        val foregroundServiceIntent = Intent(context, com.propentatech.moncoin.service.AlarmForegroundService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            context.startForegroundService(foregroundServiceIntent)
+        } else {
+            context.startService(foregroundServiceIntent)
+        }
         
         // Start a service to reschedule all alarms
         val serviceIntent = Intent(context, AlarmRescheduleService::class.java)

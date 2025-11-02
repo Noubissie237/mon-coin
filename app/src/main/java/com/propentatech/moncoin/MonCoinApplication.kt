@@ -26,6 +26,7 @@ class MonCoinApplication : Application(), Configuration.Provider {
         createNotificationChannels()
         scheduleDailyOccurrenceWorker()
         startDailyTaskResetService()
+        startAlarmForegroundService()
     }
     
     /**
@@ -34,6 +35,19 @@ class MonCoinApplication : Application(), Configuration.Provider {
     private fun startDailyTaskResetService() {
         val serviceIntent = Intent(this, DailyTaskResetService::class.java)
         startService(serviceIntent)
+    }
+    
+    /**
+     * Démarre le service en premier plan pour garantir que l'app reste active
+     * en arrière-plan pour déclencher les alarmes
+     */
+    private fun startAlarmForegroundService() {
+        val serviceIntent = Intent(this, com.propentatech.moncoin.service.AlarmForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
     }
     
     override val workManagerConfiguration: Configuration
