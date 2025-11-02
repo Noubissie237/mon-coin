@@ -13,9 +13,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.propentatech.moncoin.ui.navigation.NavGraph
+import com.propentatech.moncoin.ui.screen.permissions.PermissionsHelper
+import com.propentatech.moncoin.ui.screen.permissions.PermissionsScreen
 import com.propentatech.moncoin.ui.theme.MonCoinTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -50,8 +53,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             MonCoinTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    val navController = rememberNavController()
-                    NavGraph(navController = navController)
+                    var hasAllPermissions by remember { 
+                        mutableStateOf(PermissionsHelper.hasAllCriticalPermissions(this))
+                    }
+                    
+                    if (hasAllPermissions) {
+                        val navController = rememberNavController()
+                        NavGraph(navController = navController)
+                    } else {
+                        PermissionsScreen(
+                            onAllPermissionsGranted = {
+                                hasAllPermissions = true
+                            }
+                        )
+                    }
                 }
             }
         }

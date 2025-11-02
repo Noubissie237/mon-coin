@@ -709,6 +709,9 @@ fun TimeRangePicker(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     
+    // Vérifier si l'heure de fin est invalide
+    val isInvalidTimeRange = startTime != null && endTime != null && endTime <= startTime
+    
     Card {
         Column(
             modifier = Modifier
@@ -730,7 +733,14 @@ fun TimeRangePicker(
             
             OutlinedButton(
                 onClick = { showEndTimePicker = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = if (isInvalidTimeRange) {
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    ButtonDefaults.outlinedButtonColors()
+                }
             ) {
                 Icon(Icons.Default.DateRange, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -738,6 +748,27 @@ fun TimeRangePicker(
                     text = endTime?.let { String.format("%02d:%02d", it.hour, it.minute) } 
                         ?: "Heure de fin"
                 )
+            }
+            
+            // Message d'avertissement si l'heure de fin est invalide
+            if (isInvalidTimeRange) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "L'heure de fin doit être après l'heure de début",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }

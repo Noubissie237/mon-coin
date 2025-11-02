@@ -58,20 +58,17 @@ class AlarmReceiver : BroadcastReceiver() {
             
             // Check if we should trigger the alarm (only if RUNNING)
             if (taskStateChecker.shouldTriggerEndAlarm(occurrenceId)) {
-                Log.d(TAG, "Launching full-screen alarm activity for task end...")
+                Log.d(TAG, "Showing full-screen notification for task end...")
                 
-                // Launch AlarmActivity directly - this works even when app is killed
-                val alarmIntent = Intent(context, com.propentatech.moncoin.alarm.AlarmActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                           Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                           Intent.FLAG_ACTIVITY_NO_USER_ACTION
-                    putExtra(EXTRA_OCCURRENCE_ID, occurrenceId)
-                    putExtra(EXTRA_TASK_ID, taskId)
-                    putExtra(EXTRA_TASK_TITLE, taskTitle)
-                }
-                context.startActivity(alarmIntent)
+                // Use notification with full-screen intent - this is the ONLY reliable way
+                // to show full-screen activities from background on Android 10+
+                notificationHelper.showTaskEndNotification(
+                    occurrenceId = occurrenceId,
+                    taskId = taskId,
+                    taskTitle = taskTitle
+                )
                 
-                Log.d(TAG, "Alarm activity launched successfully!")
+                Log.d(TAG, "Full-screen notification shown successfully!")
             } else {
                 // Task was not started, mark as MISSED
                 val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
@@ -112,20 +109,17 @@ class AlarmReceiver : BroadcastReceiver() {
             
             // Check if we should trigger the start alarm (only if SCHEDULED)
             if (taskStateChecker.shouldTriggerStartAlarm(occurrenceId)) {
-                Log.d(TAG, "Launching full-screen start activity...")
+                Log.d(TAG, "Showing full-screen notification for task start...")
                 
-                // Launch TaskStartActivity directly - this works even when app is killed
-                val startIntent = Intent(context, com.propentatech.moncoin.ui.screen.task.start.TaskStartActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or 
-                           Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                           Intent.FLAG_ACTIVITY_NO_USER_ACTION
-                    putExtra("occurrence_id", occurrenceId)
-                    putExtra("task_id", taskId)
-                    putExtra("task_title", taskTitle)
-                }
-                context.startActivity(startIntent)
+                // Use notification with full-screen intent - this is the ONLY reliable way
+                // to show full-screen activities from background on Android 10+
+                notificationHelper.showTaskStartNotification(
+                    occurrenceId = occurrenceId,
+                    taskId = taskId,
+                    taskTitle = taskTitle
+                )
                 
-                Log.d(TAG, "Start activity launched successfully!")
+                Log.d(TAG, "Full-screen notification shown successfully!")
             } else {
                 Log.w(TAG, "Task is not in SCHEDULED state, not triggering start alarm")
             }

@@ -196,6 +196,14 @@ class TaskCreateViewModel @Inject constructor(
             return
         }
         
+        // Vérifier que l'heure de fin est après l'heure de début
+        if (state.taskMode == TaskMode.PLAGE && state.startTime != null && state.endTime != null) {
+            if (state.endTime <= state.startTime) {
+                _uiState.value = state.copy(error = "L'heure de fin doit être après l'heure de début")
+                return
+            }
+        }
+        
         if (state.taskType == TaskType.PERIODIQUE && state.selectedDaysOfWeek.isEmpty()) {
             _uiState.value = state.copy(error = "Veuillez sélectionner au moins un jour de la semaine")
             return
