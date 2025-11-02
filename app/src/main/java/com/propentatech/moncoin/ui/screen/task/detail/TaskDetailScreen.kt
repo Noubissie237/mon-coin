@@ -132,7 +132,8 @@ fun TaskDetailScreen(
                             uiState.task?.let { task ->
                                 // Start button for DUREE mode tasks
                                 if (task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE 
-                                    && task.state != TaskState.RUNNING) {
+                                    && task.state != TaskState.RUNNING 
+                                    && task.state != TaskState.COMPLETED) {
                                     Button(
                                         onClick = { viewModel.startTask() },
                                         modifier = Modifier.fillMaxWidth(),
@@ -143,6 +144,22 @@ fun TaskDetailScreen(
                                         Icon(Icons.Default.PlayArrow, contentDescription = null)
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text("Démarrer la tâche")
+                                    }
+                                }
+                                
+                                // Complete button for DUREE mode tasks (when running)
+                                if (task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE 
+                                    && task.state == TaskState.RUNNING) {
+                                    Button(
+                                        onClick = { viewModel.completeDurationTask() },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.tertiary
+                                        )
+                                    ) {
+                                        Icon(Icons.Default.Check, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Marquer comme terminée")
                                     }
                                 }
                                 

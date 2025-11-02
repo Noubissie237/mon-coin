@@ -164,4 +164,31 @@ class TaskDetailViewModel @Inject constructor(
             }
         }
     }
+    
+    fun completeDurationTask() {
+        viewModelScope.launch {
+            val task = _uiState.value.task ?: return@launch
+            
+            // Only for DUREE mode tasks
+            if (task.mode == com.propentatech.moncoin.data.model.TaskMode.DUREE) {
+                // Récupérer l'occurrence en cours (RUNNING) pour cette tâche
+                val today = LocalDateTime.now()
+                val startOfDay = today.toLocalDate().atStartOfDay()
+                val endOfDay = today.toLocalDate().atTime(23, 59, 59)
+                
+                // Obtenir toutes les occurrences du jour pour cette tâche
+                val occurrences = occurrenceRepository.getOccurrencesBetween(startOfDay, endOfDay)
+                    .first() // Prendre la première émission du Flow
+                    .filter { it.taskId == task.id && it.state == TaskState.RUNNING }
+                
+                // Mettre à jour l'occurrence active si elle existe
+                occurrences.firstOrNull()?.let { occurrence ->
+                    occurrenceRepository.updateOccurrenceState(occurrence.id, TaskState.COMPLETED)
+                }
+                
+                // Mettre à jour l'état de la tâche
+                taskRepository.updateTaskState(task.id, TaskState.COMPLETED)
+            }
+        }
+    }
 }

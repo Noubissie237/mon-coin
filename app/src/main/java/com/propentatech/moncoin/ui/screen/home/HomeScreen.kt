@@ -136,7 +136,7 @@ fun HomeScreen(
                                     title = unifiedTask.task.title,
                                     description = unifiedTask.task.description,
                                     durationMinutes = unifiedTask.task.durationMinutes ?: 60,
-                                    isCompleted = unifiedTask.task.state == TaskState.COMPLETED,
+                                    state = unifiedTask.task.state,
                                     onStart = { viewModel.startTask(unifiedTask.task.id) },
                                     onComplete = { viewModel.completeTask(unifiedTask.task.id) },
                                     onClick = { onNavigateToTaskDetail(unifiedTask.task.id) }
@@ -322,11 +322,14 @@ fun DurationTaskCard(
     title: String,
     description: String,
     durationMinutes: Int,
-    isCompleted: Boolean = false,
+    state: TaskState,
     onStart: () -> Unit,
     onComplete: () -> Unit,
     onClick: () -> Unit
 ) {
+    val isCompleted = state == TaskState.COMPLETED
+    val isRunning = state == TaskState.RUNNING
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -334,7 +337,11 @@ fun DurationTaskCard(
                 MaterialTheme.colorScheme.surfaceVariant
             else
                 MaterialTheme.colorScheme.surface
-        )
+        ),
+        border = if (isRunning) 
+            androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        else 
+            null
     ) {
         Row(
             modifier = Modifier
@@ -343,12 +350,42 @@ fun DurationTaskCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Icône d'état
+            when {
+                isCompleted -> {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Terminée",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+                isRunning -> {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "En cours",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+            }
+            
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 1
+                    maxLines = 1,
+                    textDecoration = if (isCompleted) 
+                        androidx.compose.ui.text.style.TextDecoration.LineThrough 
+                    else 
+                        null,
+                    color = if (isCompleted) 
+                        MaterialTheme.colorScheme.onSurfaceVariant 
+                    else 
+                        MaterialTheme.colorScheme.onSurface
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -368,27 +405,34 @@ fun DurationTaskCard(
                 }
             }
             
-            Button(
-                onClick = onStart,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Démarrer", style = MaterialTheme.typography.labelLarge)
+            // Bouton Démarrer (seulement si pas en cours et pas terminée)
+            if (!isRunning && !isCompleted) {
+                Button(
+                    onClick = onStart,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Démarrer", style = MaterialTheme.typography.labelLarge)
+                }
             }
             
-            IconButton(
-                onClick = onComplete,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Marquer comme terminée",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
+            // Bouton Terminer (seulement si en cours)
+            if (isRunning) {
+                Button(
+                    onClick = onComplete,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Terminer", style = MaterialTheme.typography.labelLarge)
+                }
             }
             
+            // Bouton Info
             IconButton(
                 onClick = onClick,
                 modifier = Modifier.size(40.dp)
