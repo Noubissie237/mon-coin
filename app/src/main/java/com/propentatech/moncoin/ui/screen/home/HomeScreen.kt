@@ -100,7 +100,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Motivation and Summary
-                item {
+                item(key = "motivation") {
                     MotivationAndSummaryCard(
                         motivation = uiState.dailyMotivation,
                         daySummary = uiState.daySummary
@@ -109,7 +109,7 @@ fun HomeScreen(
                 
                 // All Today's Tasks (unified section)
                 if (uiState.allTasks.isNotEmpty()) {
-                    item {
+                    item(key = "title") {
                         Text(
                             text = "Tâches du jour",
                             style = MaterialTheme.typography.titleLarge,
@@ -118,7 +118,13 @@ fun HomeScreen(
                     }
                     
                     // Afficher toutes les tâches unifiées et triées
-                    items(uiState.allTasks) { unifiedTask ->
+                    items(uiState.allTasks, key = { task ->
+                        when (task) {
+                            is UnifiedTask.OccurrenceTask -> "occ_${task.occurrence.id}"
+                            is UnifiedTask.DurationTask -> "dur_${task.task.id}"
+                            is UnifiedTask.FlexibleTask -> "flex_${task.task.id}"
+                        }
+                    }) { unifiedTask ->
                         when (unifiedTask) {
                             is UnifiedTask.OccurrenceTask -> {
                                 OccurrenceCard(
