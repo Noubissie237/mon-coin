@@ -6,6 +6,7 @@ import android.os.IBinder
 import android.util.Log
 import com.propentatech.moncoin.data.model.TaskMode
 import com.propentatech.moncoin.data.model.TaskState
+import com.propentatech.moncoin.data.model.TaskType
 import com.propentatech.moncoin.data.repository.TaskRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -56,18 +57,22 @@ class DailyTaskResetService : Service() {
             
             // Récupérer toutes les tâches flexibles terminées
             val allTasks = taskRepository.getAllTasksOnce()
-            val flexibleCompletedTasks = allTasks.filter { task ->
-                task.mode == TaskMode.FLEXIBLE && task.state == TaskState.COMPLETED
+            val flexibleTasksToReset = allTasks.filter { task ->
+                // Ne réinitialiser que les tâches flexibles qui sont récurrentes
+                task.mode == TaskMode.FLEXIBLE && 
+                task.state == TaskState.COMPLETED &&
+                (task.type == TaskType.QUOTIDIENNE || 
+                 (task.type == TaskType.PERIODIQUE && task.recurrence?.daysOfWeek?.contains(today.dayOfWeek) == true))
             }
             
             // Réinitialiser leur statut à SCHEDULED
-            flexibleCompletedTasks.forEach { task ->
+            flexibleTasksToReset.forEach { task ->
                 taskRepository.updateTaskState(task.id, TaskState.SCHEDULED)
                 Log.d(TAG, "Reset task: ${task.title}")
             }
             
             lastResetDate = today
-            Log.d(TAG, "Reset completed for ${flexibleCompletedTasks.size} flexible tasks")
+            Log.d(TAG, "Reset completed for ${flexibleTasksToReset.size} flexible tasks")
         }
     }
     
