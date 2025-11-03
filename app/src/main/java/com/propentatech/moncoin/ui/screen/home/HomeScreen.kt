@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -39,6 +40,14 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val listState = rememberLazyListState()
+    
+    // Déterminer si on doit étendre le FAB (quand on est en haut de la liste)
+    val expandedFab by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex == 0
+        }
+    }
     
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -49,8 +58,16 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = onNavigateToTaskCreate,
+                expanded = expandedFab,
+                icon = {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Nouvelle tâche"
+                    )
+                },
+                text = { Text("Nouvelle tâche") },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 elevation = FloatingActionButtonDefaults.elevation(
@@ -58,13 +75,7 @@ fun HomeScreen(
                     pressedElevation = 12.dp,
                     hoveredElevation = 10.dp
                 )
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Nouvelle tâche",
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+            )
         },
         bottomBar = {
             BottomNavigationBar(
@@ -87,10 +98,16 @@ fun HomeScreen(
             }
         } else {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
+                contentPadding = PaddingValues(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = 20.dp,
+                    bottom = 100.dp  // Espace pour le FAB
+                ),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Motivation and Summary
