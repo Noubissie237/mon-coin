@@ -12,32 +12,76 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryDark,
+    onPrimary = OnPrimaryDark,
+    primaryContainer = PrimaryVariantDark,
+    onPrimaryContainer = OnPrimaryDark,
+    
+    secondary = SecondaryDark,
+    onSecondary = OnSecondaryDark,
+    secondaryContainer = SecondaryVariantDark,
+    onSecondaryContainer = OnSecondaryDark,
+    
+    tertiary = TertiaryDark,
+    onTertiary = OnTertiaryDark,
+    tertiaryContainer = TertiaryVariantDark,
+    onTertiaryContainer = OnTertiaryDark,
+    
+    error = ErrorDark,
+    onError = OnPrimaryDark,
+    errorContainer = ErrorDark,
+    onErrorContainer = OnPrimaryDark,
+    
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark,
+    
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
+    
+    outline = OnSurfaceVariantDark,
+    outlineVariant = SurfaceVariantDark
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = Primary,
+    onPrimary = OnPrimary,
+    primaryContainer = PrimaryVariant,
+    onPrimaryContainer = OnPrimary,
+    
+    secondary = Secondary,
+    onSecondary = OnSecondary,
+    secondaryContainer = SecondaryVariant,
+    onSecondaryContainer = OnSecondary,
+    
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
+    tertiaryContainer = TertiaryVariant,
+    onTertiaryContainer = OnTertiary,
+    
+    error = Error,
+    onError = OnPrimary,
+    errorContainer = Error,
+    onErrorContainer = OnPrimary,
+    
+    background = Background,
+    onBackground = OnBackground,
+    
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    
+    outline = OnSurfaceVariant,
+    outlineVariant = SurfaceVariant
 )
 
 @Composable
 fun MonCoinTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Dynamic color désactivé pour utiliser notre palette personnalisée
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -53,6 +97,7 @@ fun MonCoinTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

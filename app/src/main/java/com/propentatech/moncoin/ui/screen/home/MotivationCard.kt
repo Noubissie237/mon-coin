@@ -26,7 +26,10 @@ fun MotivationAndSummaryCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 2.dp
+            )
         ) {
             Row(
                 modifier = Modifier
@@ -58,7 +61,10 @@ fun MotivationAndSummaryCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 3.dp,
+                pressedElevation = 1.dp
+            )
         ) {
             Column(
                 modifier = Modifier

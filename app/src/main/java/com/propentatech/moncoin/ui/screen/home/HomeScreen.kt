@@ -40,6 +40,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { 
@@ -64,12 +65,30 @@ fun HomeScreen(
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Paramètres")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToTaskCreate) {
-                Icon(Icons.Default.Add, contentDescription = "Nouvelle tâche")
+            FloatingActionButton(
+                onClick = onNavigateToTaskCreate,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 8.dp,
+                    pressedElevation = 12.dp,
+                    hoveredElevation = 10.dp
+                )
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Nouvelle tâche",
+                    modifier = Modifier.size(28.dp)
+                )
             }
         },
         bottomBar = {
@@ -210,12 +229,17 @@ fun OccurrenceCard(
         ),
         colors = CardDefaults.cardColors(
             containerColor = containerColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isRunning) 4.dp else 2.dp,
+            pressedElevation = 1.dp,
+            hoveredElevation = 6.dp
         )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icône d'état à gauche
@@ -366,7 +390,11 @@ fun DurationTaskCard(
         border = if (isRunning) 
             androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         else 
-            null
+            null,
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isRunning) 4.dp else 2.dp,
+            pressedElevation = 1.dp
+        )
     ) {
         Row(
             modifier = Modifier
@@ -529,6 +557,11 @@ fun FlexibleTaskCard(
                 MaterialTheme.colorScheme.surfaceVariant 
             else 
                 MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 1.dp,
+            hoveredElevation = 4.dp
         )
     ) {
         Row(
