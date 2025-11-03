@@ -24,7 +24,8 @@ import java.io.File
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToSleepSchedule: () -> Unit = {}
+    onNavigateToSleepSchedule: () -> Unit = {},
+    onNavigateToThemeSelection: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -123,6 +124,26 @@ fun SettingsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            item {
+                Text(
+                    text = "Apparence",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            
+            item {
+                SettingsClickableItem(
+                    title = "Thème de couleurs",
+                    description = "Choisir une palette apaisante",
+                    onClick = onNavigateToThemeSelection
+                )
+            }
+            
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            }
+            
             item {
                 Text(
                     text = "Sommeil",

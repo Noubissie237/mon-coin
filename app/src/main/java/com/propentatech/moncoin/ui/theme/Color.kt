@@ -2,36 +2,36 @@ package com.propentatech.moncoin.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Palette moderne et dynamique inspirée du mouvement
-// Mode clair - Couleurs vives et énergiques
-val Primary = Color(0xFF2563EB) // Bleu électrique moderne
-val PrimaryVariant = Color(0xFF1E40AF) // Bleu plus foncé
-val Secondary = Color(0xFF10B981) // Vert émeraude
-val SecondaryVariant = Color(0xFF059669) // Vert plus foncé
-val Tertiary = Color(0xFFF59E0B) // Orange ambré
-val TertiaryVariant = Color(0xFFD97706) // Orange plus foncé
+// Palette douce et apaisante - Indigo/Lavande
+// Mode clair - Couleurs douces et sereines
+val Primary = Color(0xFF6366F1) // Indigo doux et apaisant
+val PrimaryVariant = Color(0xFF4F46E5) // Indigo moyen
+val Secondary = Color(0xFF06B6D4) // Cyan apaisant
+val SecondaryVariant = Color(0xFF0891B2) // Cyan plus foncé
+val Tertiary = Color(0xFFA78BFA) // Violet pastel
+val TertiaryVariant = Color(0xFF8B5CF6) // Violet moyen
 
 val Success = Color(0xFF10B981) // Vert succès
 val Error = Color(0xFFEF4444) // Rouge erreur
-val Warning = Color(0xFFF59E0B) // Orange avertissement
-val Info = Color(0xFF3B82F6) // Bleu info
+val Warning = Color(0xFFFBBF24) // Jaune avertissement
+val Info = Color(0xFF6366F1) // Indigo info
 
-val Background = Color(0xFFF8FAFC) // Gris très clair
+val Background = Color(0xFFFAFAFC) // Gris très clair avec teinte lavande
 val Surface = Color(0xFFFFFFFF) // Blanc pur
-val SurfaceVariant = Color(0xFFF1F5F9) // Gris clair
+val SurfaceVariant = Color(0xFFF5F3FF) // Lavande très clair
 
-// Mode sombre - Couleurs douces et élégantes
-val PrimaryDark = Color(0xFF60A5FA) // Bleu clair
-val PrimaryVariantDark = Color(0xFF3B82F6) // Bleu moyen
-val SecondaryDark = Color(0xFF34D399) // Vert clair
-val SecondaryVariantDark = Color(0xFF10B981) // Vert moyen
-val TertiaryDark = Color(0xFFFBBF24) // Orange clair
-val TertiaryVariantDark = Color(0xFFF59E0B) // Orange moyen
+// Mode sombre - Couleurs douces et reposantes
+val PrimaryDark = Color(0xFFA5B4FC) // Indigo très clair
+val PrimaryVariantDark = Color(0xFF818CF8) // Indigo clair
+val SecondaryDark = Color(0xFF67E8F9) // Cyan clair
+val SecondaryVariantDark = Color(0xFF22D3EE) // Cyan moyen
+val TertiaryDark = Color(0xFFC4B5FD) // Violet très clair
+val TertiaryVariantDark = Color(0xFFA78BFA) // Violet clair
 
 val SuccessDark = Color(0xFF34D399)
 val ErrorDark = Color(0xFFF87171)
 val WarningDark = Color(0xFFFBBF24)
-val InfoDark = Color(0xFF60A5FA)
+val InfoDark = Color(0xFFA5B4FC)
 
 val BackgroundDark = Color(0xFF0F172A) // Bleu très foncé
 val SurfaceDark = Color(0xFF1E293B) // Bleu foncé

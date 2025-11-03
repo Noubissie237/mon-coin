@@ -8,6 +8,7 @@ import com.propentatech.moncoin.alarm.AlarmScheduler
 import com.propentatech.moncoin.data.local.entity.OccurrenceEntity
 import com.propentatech.moncoin.data.local.entity.TaskEntity
 import com.propentatech.moncoin.data.model.TaskState
+import com.propentatech.moncoin.data.preferences.AppPreferences
 import com.propentatech.moncoin.data.repository.OccurrenceRepository
 import com.propentatech.moncoin.data.repository.TaskRepository
 import com.propentatech.moncoin.service.TaskMonitorService
@@ -87,11 +88,21 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val taskRepository: TaskRepository,
     private val occurrenceRepository: OccurrenceRepository,
+    private val appPreferences: AppPreferences,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    
+    // Flow pour savoir si on doit afficher le tutoriel
+    val shouldShowTutorial: StateFlow<Boolean> = appPreferences.hasSeenTutorial
+        .map { hasSeenTutorial -> !hasSeenTutorial }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
     
     init {
         loadHomeData()
@@ -182,6 +193,12 @@ class HomeViewModel @Inject constructor(
             }.collect { newState ->
                 _uiState.value = newState
             }
+        }
+    }
+    
+    fun markTutorialAsCompleted() {
+        viewModelScope.launch {
+            appPreferences.markTutorialAsSeen()
         }
     }
     

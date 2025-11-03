@@ -15,15 +15,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.propentatech.moncoin.data.preferences.AppPreferences
 import com.propentatech.moncoin.ui.navigation.NavGraph
 import com.propentatech.moncoin.ui.screen.permissions.PermissionsHelper
 import com.propentatech.moncoin.ui.screen.permissions.PermissionsScreen
+import com.propentatech.moncoin.ui.theme.AppTheme
 import com.propentatech.moncoin.ui.theme.MonCoinTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var appPreferences: AppPreferences
     
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -51,7 +61,9 @@ class MainActivity : ComponentActivity() {
         requestBatteryOptimizationExemption()
         
         setContent {
-            MonCoinTheme {
+            val selectedTheme by appPreferences.selectedTheme.collectAsState(initial = AppTheme.INDIGO_SOFT)
+            
+            MonCoinTheme(selectedTheme = selectedTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     var hasAllPermissions by remember { 
                         mutableStateOf(PermissionsHelper.hasAllCriticalPermissions(this))

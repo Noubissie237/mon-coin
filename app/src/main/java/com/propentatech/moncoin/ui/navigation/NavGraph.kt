@@ -172,6 +172,17 @@ fun NavGraph(
                 },
                 onNavigateToSleepSchedule = {
                     navController.navigate(Screen.SleepSchedule.route)
+                },
+                onNavigateToThemeSelection = {
+                    navController.navigate(Screen.ThemeSelection.route)
+                }
+            )
+        }
+        
+        composable(Screen.ThemeSelection.route) {
+            com.propentatech.moncoin.ui.screen.settings.ThemeSelectionScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

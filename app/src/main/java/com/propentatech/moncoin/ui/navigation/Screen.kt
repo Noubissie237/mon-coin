@@ -16,4 +16,5 @@ sealed class Screen(val route: String) {
     object Statistics : Screen("statistics")
     object SleepSchedule : Screen("sleep_schedule")
     object Settings : Screen("settings")
+    object ThemeSelection : Screen("theme_selection")
 }

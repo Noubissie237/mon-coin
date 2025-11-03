@@ -1,6 +1,5 @@
 package com.propentatech.moncoin.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -11,20 +10,23 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark,
+/**
+ * Créer un ColorScheme sombre à partir d'un thème
+ */
+fun createDarkColorScheme(theme: AppTheme) = darkColorScheme(
+    primary = getThemeColors(theme).primaryDark,
     onPrimary = OnPrimaryDark,
-    primaryContainer = PrimaryVariantDark,
+    primaryContainer = getThemeColors(theme).primaryVariantDark,
     onPrimaryContainer = OnPrimaryDark,
     
-    secondary = SecondaryDark,
+    secondary = getThemeColors(theme).secondaryDark,
     onSecondary = OnSecondaryDark,
-    secondaryContainer = SecondaryVariantDark,
+    secondaryContainer = getThemeColors(theme).secondaryVariantDark,
     onSecondaryContainer = OnSecondaryDark,
     
-    tertiary = TertiaryDark,
+    tertiary = getThemeColors(theme).tertiaryDark,
     onTertiary = OnTertiaryDark,
-    tertiaryContainer = TertiaryVariantDark,
+    tertiaryContainer = getThemeColors(theme).tertiaryVariantDark,
     onTertiaryContainer = OnTertiaryDark,
     
     error = ErrorDark,
@@ -32,32 +34,35 @@ private val DarkColorScheme = darkColorScheme(
     errorContainer = ErrorDark,
     onErrorContainer = OnPrimaryDark,
     
-    background = BackgroundDark,
+    background = getThemeColors(theme).backgroundDark,
     onBackground = OnBackgroundDark,
     
-    surface = SurfaceDark,
+    surface = getThemeColors(theme).surfaceDark,
     onSurface = OnSurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
+    surfaceVariant = getThemeColors(theme).surfaceVariantDark,
     onSurfaceVariant = OnSurfaceVariantDark,
     
     outline = OnSurfaceVariantDark,
-    outlineVariant = SurfaceVariantDark
+    outlineVariant = getThemeColors(theme).surfaceVariantDark
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Primary,
+/**
+ * Créer un ColorScheme clair à partir d'un thème
+ */
+fun createLightColorScheme(theme: AppTheme) = lightColorScheme(
+    primary = getThemeColors(theme).primary,
     onPrimary = OnPrimary,
-    primaryContainer = PrimaryVariant,
+    primaryContainer = getThemeColors(theme).primaryVariant,
     onPrimaryContainer = OnPrimary,
     
-    secondary = Secondary,
+    secondary = getThemeColors(theme).secondary,
     onSecondary = OnSecondary,
-    secondaryContainer = SecondaryVariant,
+    secondaryContainer = getThemeColors(theme).secondaryVariant,
     onSecondaryContainer = OnSecondary,
     
-    tertiary = Tertiary,
+    tertiary = getThemeColors(theme).tertiary,
     onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryVariant,
+    tertiaryContainer = getThemeColors(theme).tertiaryVariant,
     onTertiaryContainer = OnTertiary,
     
     error = Error,
@@ -65,22 +70,22 @@ private val LightColorScheme = lightColorScheme(
     errorContainer = Error,
     onErrorContainer = OnPrimary,
     
-    background = Background,
+    background = getThemeColors(theme).background,
     onBackground = OnBackground,
     
-    surface = Surface,
+    surface = getThemeColors(theme).surface,
     onSurface = OnSurface,
-    surfaceVariant = SurfaceVariant,
+    surfaceVariant = getThemeColors(theme).surfaceVariant,
     onSurfaceVariant = OnSurfaceVariant,
     
     outline = OnSurfaceVariant,
-    outlineVariant = SurfaceVariant
+    outlineVariant = getThemeColors(theme).surfaceVariant
 )
 
 @Composable
 fun MonCoinTheme(
+    selectedTheme: AppTheme = AppTheme.INDIGO_SOFT,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color désactivé pour utiliser notre palette personnalisée
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -90,8 +95,8 @@ fun MonCoinTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> createDarkColorScheme(selectedTheme)
+        else -> createLightColorScheme(selectedTheme)
     }
 
     MaterialTheme(
