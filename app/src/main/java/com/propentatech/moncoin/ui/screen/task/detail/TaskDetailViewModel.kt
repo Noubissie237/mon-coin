@@ -191,4 +191,29 @@ class TaskDetailViewModel @Inject constructor(
             }
         }
     }
+    
+    /**
+     * Repasser une tâche flexible de COMPLETED à SCHEDULED
+     * Utile pour annuler une complétion accidentelle
+     */
+    fun uncompleteFlexibleTask() {
+        viewModelScope.launch {
+            val task = _uiState.value.task ?: return@launch
+            
+            // Only for FLEXIBLE mode tasks
+            if (task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE) {
+                taskRepository.updateTaskState(task.id, TaskState.SCHEDULED)
+            }
+        }
+    }
+    
+    /**
+     * Repasser une occurrence de COMPLETED à SCHEDULED
+     * Utile pour annuler une complétion accidentelle
+     */
+    fun uncompleteOccurrence(occurrenceId: String) {
+        viewModelScope.launch {
+            occurrenceRepository.updateOccurrenceState(occurrenceId, TaskState.SCHEDULED)
+        }
+    }
 }

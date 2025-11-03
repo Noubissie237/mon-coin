@@ -264,4 +264,32 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+    
+    /**
+     * Repasser une tâche de COMPLETED à SCHEDULED
+     * Utile pour annuler une complétion accidentelle
+     */
+    fun uncompleteTask(taskId: String) {
+        viewModelScope.launch {
+            taskRepository.updateTaskState(taskId, TaskState.SCHEDULED)
+        }
+    }
+    
+    /**
+     * Repasser une occurrence de COMPLETED à SCHEDULED
+     * Utile pour annuler une complétion accidentelle
+     */
+    fun uncompleteOccurrence(occurrenceId: String) {
+        viewModelScope.launch {
+            // Mettre à jour l'état de l'occurrence
+            occurrenceRepository.updateOccurrenceState(occurrenceId, TaskState.SCHEDULED)
+            
+            // Récupérer l'occurrence pour obtenir le taskId
+            val occurrence = occurrenceRepository.getOccurrenceById(occurrenceId)
+            if (occurrence != null) {
+                // Mettre à jour l'état de la tâche principale
+                taskRepository.updateTaskState(occurrence.taskId, TaskState.SCHEDULED)
+            }
+        }
+    }
 }

@@ -163,19 +163,32 @@ fun TaskDetailScreen(
                                     }
                                 }
                                 
-                                // Complete button for FLEXIBLE mode tasks
-                                if (task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE 
-                                    && task.state == TaskState.SCHEDULED) {
-                                    Button(
-                                        onClick = { viewModel.completeFlexibleTask() },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.primary
-                                        )
-                                    ) {
-                                        Icon(Icons.Default.Check, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Marquer comme terminée")
+                                // Complete/Uncomplete button for FLEXIBLE mode tasks
+                                if (task.mode == com.propentatech.moncoin.data.model.TaskMode.FLEXIBLE) {
+                                    if (task.state == TaskState.SCHEDULED) {
+                                        Button(
+                                            onClick = { viewModel.completeFlexibleTask() },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary
+                                            )
+                                        ) {
+                                            Icon(Icons.Default.Check, contentDescription = null)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("Marquer comme terminée")
+                                        }
+                                    } else if (task.state == TaskState.COMPLETED) {
+                                        OutlinedButton(
+                                            onClick = { viewModel.uncompleteFlexibleTask() },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = ButtonDefaults.outlinedButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.secondary
+                                            )
+                                        ) {
+                                            Icon(Icons.Default.Refresh, contentDescription = null)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("Marquer comme non faite")
+                                        }
                                     }
                                 }
                                 
@@ -405,7 +418,8 @@ fun InfoRow(label: String, value: String) {
 fun OccurrenceCard(
     occurrence: com.propentatech.moncoin.data.local.entity.OccurrenceEntity,
     onComplete: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    onUncomplete: () -> Unit = {}
 ) {
     val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -459,7 +473,7 @@ fun OccurrenceCard(
                 )
             }
             
-            // Actions for scheduled occurrences
+            // Actions for occurrences
             if (occurrence.state == TaskState.SCHEDULED) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
@@ -482,6 +496,19 @@ fun OccurrenceCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Annuler")
                     }
+                }
+            } else if (occurrence.state == TaskState.COMPLETED) {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onUncomplete,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Marquer comme non faite")
                 }
             }
         }

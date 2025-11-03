@@ -134,6 +134,7 @@ fun HomeScreen(
                                     endDateTime = unifiedTask.occurrence.endAt,
                                     state = unifiedTask.occurrence.state,
                                     onComplete = { viewModel.completeOccurrence(unifiedTask.occurrence.id) },
+                                    onUncomplete = { viewModel.uncompleteOccurrence(unifiedTask.occurrence.id) },
                                     onClick = { onNavigateToTaskDetail(unifiedTask.occurrence.taskId) }
                                 )
                             }
@@ -145,6 +146,7 @@ fun HomeScreen(
                                     state = unifiedTask.task.state,
                                     onStart = { viewModel.startTask(unifiedTask.task.id) },
                                     onComplete = { viewModel.completeTask(unifiedTask.task.id) },
+                                    onUncomplete = { viewModel.uncompleteTask(unifiedTask.task.id) },
                                     onClick = { onNavigateToTaskDetail(unifiedTask.task.id) }
                                 )
                             }
@@ -154,6 +156,7 @@ fun HomeScreen(
                                     description = unifiedTask.task.description,
                                     isCompleted = unifiedTask.task.state == TaskState.COMPLETED,
                                     onComplete = { viewModel.completeTask(unifiedTask.task.id) },
+                                    onUncomplete = { viewModel.uncompleteTask(unifiedTask.task.id) },
                                     onClick = { onNavigateToTaskDetail(unifiedTask.task.id) }
                                 )
                             }
@@ -180,6 +183,7 @@ fun OccurrenceCard(
     endDateTime: java.time.LocalDateTime,
     state: TaskState,
     onComplete: () -> Unit,
+    onUncomplete: () -> Unit = {},
     onClick: () -> Unit
 ) {
     val isRunning = state == TaskState.RUNNING
@@ -298,8 +302,22 @@ fun OccurrenceCard(
                 Spacer(modifier = Modifier.width(8.dp))
             }
             
-            // Bouton pour marquer comme terminée (si pas déjà terminée ou annulée)
-            if (!isCompleted && !isCancelled) {
+            // Bouton pour marquer comme terminée ou annuler la complétion
+            if (isCompleted) {
+                // Bouton pour repasser à l'état programmé
+                IconButton(
+                    onClick = { onUncomplete() },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Marquer comme non faite",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            } else if (!isCancelled) {
+                // Bouton pour marquer comme terminée
                 IconButton(
                     onClick = { onComplete() },
                     modifier = Modifier.size(36.dp)
@@ -331,6 +349,7 @@ fun DurationTaskCard(
     state: TaskState,
     onStart: () -> Unit,
     onComplete: () -> Unit,
+    onUncomplete: () -> Unit = {},
     onClick: () -> Unit
 ) {
     val isCompleted = state == TaskState.COMPLETED
@@ -438,6 +457,21 @@ fun DurationTaskCard(
                 }
             }
             
+            // Bouton pour repasser à l'état programmé (si terminée)
+            if (isCompleted) {
+                IconButton(
+                    onClick = onUncomplete,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Marquer comme non faite",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            
             // Bouton Info
             IconButton(
                 onClick = onClick,
@@ -484,6 +518,7 @@ fun FlexibleTaskCard(
     description: String,
     isCompleted: Boolean,
     onComplete: () -> Unit,
+    onUncomplete: () -> Unit = {},
     onClick: () -> Unit
 ) {
     Card(
@@ -573,13 +608,20 @@ fun FlexibleTaskCard(
                     )
                 }
             } else {
-                // Show completed icon
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Tâche terminée",
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(32.dp)
-                )
+                // Bouton pour repasser à l'état programmé
+                IconButton(
+                    onClick = { onUncomplete() },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Marquer comme non faite",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
     }
