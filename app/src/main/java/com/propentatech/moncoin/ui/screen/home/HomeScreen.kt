@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.propentatech.moncoin.data.model.TaskState
 import com.propentatech.moncoin.ui.components.BottomNavigationBar
+import com.propentatech.moncoin.ui.components.ModernAppBar
 import com.propentatech.moncoin.ui.components.Screen
 import com.propentatech.moncoin.ui.components.TaskTimer
 import com.propentatech.moncoin.util.TimeFormatUtils
@@ -42,35 +43,9 @@ fun HomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = com.propentatech.moncoin.R.drawable.logo_move),
-                            contentDescription = "Logo Move",
-                            modifier = Modifier.size(40.dp)
-                        )
-                        Text(
-                            text = "ove",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Paramètres")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            ModernAppBar(
+                logoResId = com.propentatech.moncoin.R.drawable.logo_move,
+                onSettingsClick = onNavigateToSettings
             )
         },
         floatingActionButton = {
@@ -115,8 +90,8 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Motivation and Summary
                 item(key = "motivation") {
@@ -130,9 +105,10 @@ fun HomeScreen(
                 if (uiState.allTasks.isNotEmpty()) {
                     item(key = "title") {
                         Text(
-                            text = "Tâches du jour",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
+                            text = "Mes tâches",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                     
